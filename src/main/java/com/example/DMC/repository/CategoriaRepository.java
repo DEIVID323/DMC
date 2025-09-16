@@ -1,11 +1,10 @@
 package com.example.DMC.repository;
 
-
+    
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.example.DMC.entities.Categoria;
+import com.example.DMC.model.Categoria;
 
-public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
-    
-    
+public interface CategoriaRepository extends JpaRepository<Categoria, Integer> {
 }
+
