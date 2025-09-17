@@ -7,18 +7,15 @@ import lombok.*;
 
 @Entity
 @Table(name = "roles")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Rol {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id_rol")
+    private Integer idRol;
 
-    @Column(unique = true, nullable = false, length = 50)
-    private String nombre;
-
-    private String descripcion;
+    @Column(name = "nombre_rol", nullable = false, unique = true, length = 50)
+    private String nombreRol;
 }

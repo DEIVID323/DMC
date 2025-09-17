@@ -11,19 +11,21 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "permisos")
+@Table(name = "tipo_moneda")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Permiso {
+public class TipoMoneda {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_permiso")
-    private Integer idPermiso;
+    private Integer id;
 
-    @Column(name = "nombre_permiso", nullable = false, unique = true, length = 100)
-    private String nombrePermiso;
-
-    @Column(name = "descripcion", length = 255)
+    @Column(name = "descripcion", nullable = false, length = 50)
     private String descripcion;
+
+    @Column(name = "simbolo", nullable = false, length = 5)
+    private String simbolo;
+
+    @Column(name = "activo", nullable = false)
+    private Boolean activo = true;
 }

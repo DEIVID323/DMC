@@ -7,4 +7,3 @@ import com.example.DMC.model.Categoria;
 
 public interface CategoriaRepository extends JpaRepository<Categoria, Integer> {
 }
-

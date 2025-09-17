@@ -24,7 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
     private RolPermisoRepository rolPermisoRepository;
- 
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepository.findByUsername(username)
@@ -32,13 +32,17 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
-        // Agregar el rol como autoridad (prefijo ROLE_)
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().getNombreRol().toUpperCase()));
+        // Verificar que el rol no sea nulo
+        if (usuario.getRol() != null) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().getNombreRol().toUpperCase()));
 
-        // Agregar permisos específicos del rol
-        List<RolPermiso> permisos = rolPermisoRepository.findByIdRol(usuario.getRol().getIdRol());
-        for (rolPermiso rolPermiso : permisos) {
-            authorities.add(new SimpleGrantedAuthority(rolPermiso.getPermiso().getNombrePermiso()));
+            // Agregar permisos específicos del rol
+            List<RolPermiso> permisos = rolPermisoRepository.findByIdRol(usuario.getRol().getIdRol());
+            for (RolPermiso rolPermiso : permisos) {
+                if (rolPermiso.getPermiso() != null) {
+                    authorities.add(new SimpleGrantedAuthority(rolPermiso.getPermiso().getNombrePermiso()));
+                }
+            }
         }
 
         return new User(
