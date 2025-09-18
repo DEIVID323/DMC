@@ -24,25 +24,25 @@ public class VentaController {
     private VentaService service;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public List<Venta> getAll() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public ResponseEntity<Venta> getById(@PathVariable Integer id) {
         return service.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public Venta create(@RequestBody Venta entity) {
         return service.save(entity);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public ResponseEntity<Venta> update(@PathVariable Integer id, @RequestBody Venta entity) {
         return service.findById(id).map(existing -> {
             entity.setIdVenta(id);
@@ -51,7 +51,7 @@ public class VentaController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();

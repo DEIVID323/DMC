@@ -4,6 +4,8 @@ package com.example.DMC.model;
 
 import java.io.Serializable;
 
+import lombok.Data;
+@Data
 public class RolPermisoId implements Serializable {
     private Integer idRol;
     private Integer idPermiso;

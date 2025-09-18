@@ -20,25 +20,25 @@ public class CategoriaController {
     private CategoriaService service;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public List<Categoria> getAll() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public ResponseEntity<Categoria> getById(@PathVariable Integer id) {
         return service.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public Categoria create(@RequestBody Categoria entity) {
         return service.save(entity);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public ResponseEntity<Categoria> update(@PathVariable Integer id, @RequestBody Categoria entity) {
         return service.findById(id).map(existing -> {
             entity.setIdCategoria(id);
@@ -47,7 +47,7 @@ public class CategoriaController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();

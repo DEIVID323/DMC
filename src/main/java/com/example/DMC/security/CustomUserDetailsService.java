@@ -37,7 +37,8 @@ public class CustomUserDetailsService implements UserDetailsService {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().getNombreRol().toUpperCase()));
 
             // Agregar permisos específicos del rol
-            List<RolPermiso> permisos = rolPermisoRepository.findByIdRol(usuario.getRol().getIdRol());
+            List<RolPermiso> permisos = rolPermisoRepository.findByRolIdRol(usuario.getRol().getIdRol());
+
             for (RolPermiso rolPermiso : permisos) {
                 if (rolPermiso.getPermiso() != null) {
                     authorities.add(new SimpleGrantedAuthority(rolPermiso.getPermiso().getNombrePermiso()));

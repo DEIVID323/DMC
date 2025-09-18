@@ -27,13 +27,13 @@ public class TipoCambioController {
     private TipoCambioService service;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public List<TipoCambio> getAll() {
         return service.findAll();
     }
 
     @GetMapping("/{fecha}/{idMoneda}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public ResponseEntity<TipoCambio> getById(@PathVariable LocalDate fecha, @PathVariable Integer idMoneda) {
         TipoCambioId id = new TipoCambioId();
         id.setFecha(fecha);
@@ -42,13 +42,13 @@ public class TipoCambioController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public TipoCambio create(@RequestBody TipoCambio entity) {
         return service.save(entity);
     }
 
     @PutMapping("/{fecha}/{idMoneda}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public ResponseEntity<TipoCambio> update(@PathVariable LocalDate fecha, @PathVariable Integer idMoneda,
             @RequestBody TipoCambio entity) {
         TipoCambioId id = new TipoCambioId();
@@ -62,7 +62,7 @@ public class TipoCambioController {
     }
 
     @DeleteMapping("/{fecha}/{idMoneda}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public ResponseEntity<Void> delete(@PathVariable LocalDate fecha, @PathVariable Integer idMoneda) {
         TipoCambioId id = new TipoCambioId();
         id.setFecha(fecha);

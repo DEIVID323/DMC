@@ -24,25 +24,25 @@ public class MovimientoInventarioController {
     private MovimientoInventarioService service;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'ALMACENISTA')")
+    @PreAuthorize("hasAnyRole('admin', 'ALMACENISTA')")
     public List<MovimientoInventario> getAll() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ALMACENISTA')")
+    @PreAuthorize("hasAnyRole('admin', 'ALMACENISTA')")
     public ResponseEntity<MovimientoInventario> getById(@PathVariable Integer id) {
         return service.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'ALMACENISTA')")
+    @PreAuthorize("hasAnyRole('admin', 'ALMACENISTA')")
     public MovimientoInventario create(@RequestBody MovimientoInventario entity) {
         return service.save(entity);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ALMACENISTA')")
+    @PreAuthorize("hasAnyRole('admin', 'ALMACENISTA')")
     public ResponseEntity<MovimientoInventario> update(@PathVariable Integer id,
             @RequestBody MovimientoInventario entity) {
         return service.findById(id).map(existing -> {
@@ -52,7 +52,7 @@ public class MovimientoInventarioController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();

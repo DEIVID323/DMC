@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.DMC.model.Cliente;
 import com.example.DMC.service.ClienteService;
 
+
 @RestController
 @RequestMapping("/api/clientes")
 public class ClienteController {
@@ -24,25 +25,26 @@ public class ClienteController {
     private ClienteService service;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CAJERO')")
+
     public List<Cliente> getAll() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public ResponseEntity<Cliente> getById(@PathVariable Integer id) {
         return service.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public Cliente create(@RequestBody Cliente entity) {
         return service.save(entity);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public ResponseEntity<Cliente> update(@PathVariable Integer id, @RequestBody Cliente entity) {
         return service.findById(id).map(existing -> {
             entity.setIdCliente(id);
@@ -51,7 +53,7 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();

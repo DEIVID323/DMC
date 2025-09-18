@@ -25,13 +25,13 @@ public class RolPermisoController {
     private RolPermisoService service;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public List<RolPermiso> getAll() {
         return service.findAll();
     }
 
     @GetMapping("/{idRol}/{idPermiso}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public ResponseEntity<RolPermiso> getById(@PathVariable Integer idRol, @PathVariable Integer idPermiso) {
         RolPermisoId id = new RolPermisoId();
         id.setIdRol(idRol);
@@ -40,13 +40,13 @@ public class RolPermisoController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public RolPermiso create(@RequestBody RolPermiso entity) {
         return service.save(entity);
     }
 
     @PutMapping("/{idRol}/{idPermiso}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public ResponseEntity<RolPermiso> update(@PathVariable Integer idRol, @PathVariable Integer idPermiso,
             @RequestBody RolPermiso entity) {
         RolPermisoId id = new RolPermisoId();
@@ -60,7 +60,7 @@ public class RolPermisoController {
     }
 
     @DeleteMapping("/{idRol}/{idPermiso}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public ResponseEntity<Void> delete(@PathVariable Integer idRol, @PathVariable Integer idPermiso) {
         RolPermisoId id = new RolPermisoId();
         id.setIdRol(idRol);

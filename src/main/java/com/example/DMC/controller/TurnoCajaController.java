@@ -24,25 +24,25 @@ public class TurnoCajaController {
     private TurnoCajaService service;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public List<TurnoCaja> getAll() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public ResponseEntity<TurnoCaja> getById(@PathVariable Integer id) {
         return service.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public TurnoCaja create(@RequestBody TurnoCaja entity) {
         return service.save(entity);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public ResponseEntity<TurnoCaja> update(@PathVariable Integer id, @RequestBody TurnoCaja entity) {
         return service.findById(id).map(existing -> {
             entity.setIdTurno(id);
@@ -51,7 +51,7 @@ public class TurnoCajaController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('admin')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
