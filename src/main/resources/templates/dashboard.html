@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión - Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Configuración de Tailwind para animaciones personalizadas -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ffffff', // White
+                        secondary: '#dc2626', // Red
+                        accent: '#000000', // Black
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-in-out',
+                        'slide-in-left': 'slideInLeft 0.3s ease-out',
+                        'slide-in-top': 'slideInTop 0.3s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideInLeft: {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(0)' },
+                        },
+                        slideInTop: {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(0)' },
+                        },
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar.closed {
+            transform: translateX(-100%);
+        }
+
+        @media (min-width: 768px) {
+            .sidebar.closed~.main-content {
+                margin-left: 0 !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 font-sans antialiased">
+    <!-- Botón toggler para sidebar (móvil) -->
+    <button class="fixed top-4 left-4 z-50 md:hidden text-accent hover:text-secondary focus:outline-none"
+        id="sidebarToggle">
+        <i class="fas fa-bars text-2xl"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <nav class="sidebar fixed top-0 left-0 h-full w-64 bg-primary shadow-lg overflow-y-auto transform transition-transform duration-300 ease-in-out z-40"
+        id="sidebar">
+        <div class="p-4 border-b border-gray-200">
+            <a class="flex items-center space-x-2 text-xl font-bold text-accent" href="/mi_sistema_mvc/public/home">
+                <img src="/mi_sistema_mvc/public/img/logo.png?v=1727116800" alt="Logo" class="h-10"
+                    onerror="this.onerror=null; this.src=''; this.nextElementSibling.style.display='inline';">
+                <span style="display:none;"><i class="fas fa-store"></i> GestiónPRO</span>
+            </a>
+        </div>
+        <ul class="space-y-1">
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/mi_sistema_mvc/public/home">
+                    <i class="fas fa-tachometer-alt fa-fw mr-2"></i>Dashboard
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/mi_sistema_mvc/public/venta">
+                    <i class="fas fa-cash-register fa-fw mr-2"></i>Punto de Venta
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/mi_sistema_mvc/public/venta/historial">
+                    <i class="fas fa-history fa-fw mr-2"></i>Historial de Ventas
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/mi_sistema_mvc/public/producto">
+                    <i class="fas fa-box-open fa-fw mr-2"></i>Inventario
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/categorias">
+                    <i class="fas fa-tags fa-fw mr-2"></i>Categorías
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/mi_sistema_mvc/public/almacen">
+                    <i class="fas fa-warehouse fa-fw mr-2"></i>Almacenes
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/mi_sistema_mvc/public/transferencia">
+                    <i class="fas fa-people-carry fa-fw mr-2"></i>Transferencias
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/mi_sistema_mvc/public/compra">
+                    <i class="fas fa-truck fa-fw mr-2"></i>Compras
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/mi_sistema_mvc/public/proveedor">
+                    <i class="fas fa-truck-loading fa-fw mr-2"></i>Proveedores
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/mi_sistema_mvc/public/cliente">
+                    <i class="fas fa-users fa-fw mr-2"></i>Clientes
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/mi_sistema_mvc/public/caja">
+                    <i class="fas fa-calculator fa-fw mr-2"></i>Caja
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/mi_sistema_mvc/public/reporte">
+                    <i class="fas fa-chart-line fa-fw mr-2"></i>Reportes
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/api/usuarios/home">
+                    <i class="fas fa-users-cog fa-fw mr-2"></i>Usuarios
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/mi_sistema_mvc/public/tipocambio">
+                    <i class="fas fa-exchange-alt fa-fw mr-2"></i>Tipo de Cambio
+                </a>
+            </li>
+            <li>
+                <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                    href="/mi_sistema_mvc/public/tipomoneda">
+                    <i class="fas fa-coins fa-fw mr-2"></i>Monedas
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Overlay para sidebar en móvil -->
+    <div class="fixed inset-0 bg-accent bg-opacity-50 z-30 hidden" id="sidebarOverlay"></div>
+
+    <!-- Contenido principal -->
+    <div class="main-content flex flex-col min-h-screen ml-0 md:ml-64 transition-margin duration-300 ease-in-out">
+        <!-- Header superior -->
+        <header class="top-header flex justify-end items-center p-4 bg-primary shadow-md">
+            <div class="relative">
+                <button class="flex items-center text-accent hover:text-secondary focus:outline-none"
+                    id="userDropdownToggle">
+                    <i class="fas fa-user mr-2"></i> <span id="usuarioNombre">Usuario</span>
+                </button>
+                <ul class="absolute right-0 mt-2 w-48 bg-primary shadow-lg rounded-md overflow-hidden hidden"
+                    id="userDropdownMenu">
+                    <li><a class="block px-4 py-2 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200"
+                            href="/mi_sistema_mvc/public/perfil">Mi Perfil</a></li>
+                    <li>
+                        <hr class="border-gray-200">
+                    </li>
+                    <li><a class="block px-4 py-2 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200"
+                            href="/mi_sistema_mvc/public/auth/logout">Cerrar Sesión</a></li>
+                </ul>
+            </div>
+        </header>
+
+        <!-- Main content del dashboard -->
+        <main class="flex-grow p-6 animate-fade-in">
+            <h1 class="text-3xl font-bold text-accent mb-4">Dashboard</h1>
+            <p class="mb-6 text-accent">
+                Bienvenido, <strong id="usuarioNombreBienvenida">Usuario</strong>.
+                Desde aquí puedes gestionar las operaciones del sistema.
+            </p>
+
+            <!-- Tarjetas (cards) con animaciones -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <div
+                    class="bg-primary text-accent rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105 animate-slide-in-top border border-secondary">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <div class="text-4xl font-bold" id="totalVentas">0</div>
+                            <div>Ventas Realizadas</div>
+                        </div>
+                        <i class="fas fa-shopping-cart text-5xl opacity-50"></i>
+                    </div>
+                    <a class="block p-4 bg-secondary hover:bg-red-700 text-primary transition-colors duration-200 flex justify-between items-center"
+                        href="#" id="btnVerVentas">
+                        <span>Ver Detalles</span> <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+
+                <div
+                    class="bg-primary text-accent rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105 animate-slide-in-top border border-secondary">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <div class="text-4xl font-bold" id="totalCompras">0</div>
+                            <div>Compras Realizadas</div>
+                        </div>
+                        <i class="fas fa-truck text-5xl opacity-50"></i>
+                    </div>
+                    <a class="block p-4 bg-secondary hover:bg-red-700 text-primary transition-colors duration-200 flex justify-between items-center"
+                        href="/compra">
+                        <span>Ver Detalles</span> <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+
+                <div
+                    class="bg-primary text-accent rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105 animate-slide-in-top border border-secondary">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <div class="text-4xl font-bold" id="totalProductos">0</div>
+                            <div>Productos en Inventario</div>
+                        </div>
+                        <i class="fas fa-box-open text-5xl opacity-50"></i>
+                    </div>
+                    <a class="block p-4 bg-secondary hover:bg-red-700 text-primary transition-colors duration-200 flex justify-between items-center"
+                        href="/producto">
+                        <span>Ver Detalles</span> <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+
+                <div
+                    class="bg-primary text-accent rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105 animate-slide-in-top border border-secondary">
+                    <div class="p-6 flex justify-between items-center">
+                        <div>
+                            <div class="text-4xl font-bold" id="totalProductosBajos">0</div>
+                            <div>Productos Bajos de Stock</div>
+                        </div>
+                        <i class="fas fa-exclamation-triangle text-5xl opacity-50"></i>
+                    </div>
+                    <a class="block p-4 bg-secondary hover:bg-red-700 text-primary transition-colors duration-200 flex justify-between items-center"
+                        href="/reportes/stock-bajo">
+                        <span>Ver Detalles</span> <i class="fas fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Gráfico -->
+            <div class="mt-8">
+                <div class="bg-primary rounded-lg shadow-md overflow-hidden border border-secondary">
+                    <div class="p-4 border-b border-gray-200 flex items-center text-accent">
+                        <i class="fas fa-chart-bar mr-2"></i>Ventas de los Últimos 5 Días
+                    </div>
+                    <div class="p-6">
+                        <canvas id="graficoVentas" class="w-full h-64"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de detalles de venta -->
+    <div class="fixed inset-0 bg-accent bg-opacity-50 flex items-center justify-center z-50 hidden" id="ventaModal">
+        <div class="bg-primary rounded-lg shadow-xl max-w-4xl w-full mx-4 overflow-hidden transform transition-all duration-300 scale-95"
+            id="ventaModalContent">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h5 class="text-xl font-bold text-accent">Detalles de la Venta</h5>
+                <button class="text-accent hover:text-secondary" id="closeVentaModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-auto max-h-96" id="ventaDetalles">
+                Cargando información...
+            </div>
+        </div>
+    </div>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+
+</html>

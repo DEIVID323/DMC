@@ -10,7 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-public class Proveedores {
+
 @Entity
 @Table(name = "proveedores")
 @Data
@@ -40,4 +40,4 @@ public class Proveedor {
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
 }
-}
+

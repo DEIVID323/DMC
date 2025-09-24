@@ -25,9 +25,11 @@ public class ClienteController {
     private ClienteService service;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
 
-    public List<Cliente> getAll() {
+    public List<Cliente> getAll()
+    {
+
         return service.findAll();
     }
 

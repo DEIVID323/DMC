@@ -6,19 +6,32 @@ package com.example.DMC.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.DMC.model.Categoria;
 import com.example.DMC.service.CategoriaService;
 
+
+
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/categorias")
+@Controller
+
 public class CategoriaController {
     @Autowired
     private CategoriaService service;
 
+    @GetMapping("/categorias")
+    public String getAllCategories(Model model) {
+        model.addAttribute("categorias", service.findAll());
+        return "categoria";
+    }
+
+
+
+/* 
     @GetMapping
     @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
     public List<Categoria> getAll() {
@@ -52,4 +65,5 @@ public class CategoriaController {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+*/
 }

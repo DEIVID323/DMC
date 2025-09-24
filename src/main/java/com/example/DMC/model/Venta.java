@@ -1,55 +1,92 @@
 package com.example.DMC.model;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 import com.example.DMC.enums.EstadoVenta;
-import com.example.DMC.enums.MetodoPago;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ventas")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Venta {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_venta")
     private Integer idVenta;
 
-    @ManyToOne
-    @JoinColumn(name = "id_cliente")
-    private Cliente cliente;
+    @Column(name = "id_cliente")
+    private Integer idCliente;
 
-    @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
+    @Column(name = "id_usuario", nullable = false)
+    private Integer idUsuario;
 
     @Column(name = "fecha_venta", nullable = false)
-    private LocalDateTime fechaVenta = LocalDateTime.now();
+    private LocalDateTime fechaVenta;
 
-    @Column(name = "total_venta", nullable = false, precision = 10, scale = 2)
-    private BigDecimal totalVenta;
+    @Column(name = "total_venta", nullable = false)
+    private Double totalVenta;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "metodo_pago", nullable = false)
-    private MetodoPago metodoPago;
+    private String metodoPago;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
-    private EstadoVenta estado = EstadoVenta.completada;
+    private EstadoVenta estado;
+
+    // Getters y Setters
+    public Integer getIdVenta() {
+        return idVenta;
+    }
+
+    public void setIdVenta(Integer idVenta) {
+        this.idVenta = idVenta;
+    }
+
+    public Integer getIdCliente() {
+        return idCliente;
+    }
+
+    public void setIdCliente(Integer idCliente) {
+        this.idCliente = idCliente;
+    }
+
+    public Integer getIdUsuario() {
+        return idUsuario;
+    }
+
+    public void setIdUsuario(Integer idUsuario) {
+        this.idUsuario = idUsuario;
+    }
+
+    public LocalDateTime getFechaVenta() {
+        return fechaVenta;
+    }
+
+    public void setFechaVenta(LocalDateTime fechaVenta) {
+        this.fechaVenta = fechaVenta;
+    }
+
+    public Double getTotalVenta() {
+        return totalVenta;
+    }
+
+    public void setTotalVenta(Double totalVenta) {
+        this.totalVenta = totalVenta;
+    }
+
+    public String getMetodoPago() {
+        return metodoPago;
+    }
+
+    public void setMetodoPago(String metodoPago) {
+        this.metodoPago = metodoPago;
+    }
+
+    public EstadoVenta getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoVenta estado) {
+        this.estado = estado;
+    }
 }

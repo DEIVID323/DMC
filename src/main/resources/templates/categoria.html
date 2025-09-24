@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Categorías</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3><i class="fas fa-tags me-2"></i>Gestión de Categorías</h3>
+                            <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalCategoria">
+                                <i class="fas fa-plus me-1"></i>Nueva Categoría
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Mensaje de éxito/error -->
+                        <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <span th:text="${mensaje}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        
+                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <span th:text="${error}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <!-- Tabla de categorías -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="categoria : ${categorias}">
+                                        <td th:text="${categoria.idCategoria}">1</td>
+                                        <td th:text="${categoria.nombre}">Electrónicos</td>
+                                        <td>
+                                            <span th:if="${categoria.activo}" class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>Activo
+                                            </span>
+                                            <span th:unless="${categoria.activo}" class="badge bg-danger">
+                                                <i class="fas fa-times me-1"></i>Inactivo
+                                            </span>
+                                        </td>
+                                        <td><!-- 
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-primary" 
+                                                        th:onclick="|editarCategoria(${categoria.idCategoria}, '${categoria.nombre}', ${categoria.activo})|">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-warning" 
+                                                        th:onclick="|toggleEstado(${categoria.idCategoria}, ${categoria.activo})|">
+                                                    <i class="fas fa-power-off"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" 
+                                                        th:onclick="|eliminarCategoria(${categoria.idCategoria})|">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div> -->
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <!-- Mensaje cuando no hay categorías -->
+                            <div th:if="${#lists.isEmpty(categorias)}" class="text-center py-4">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No hay categorías registradas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar categoría -->
+    <div class="modal fade" id="modalCategoria" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/categorias/guardar}" method="post" th:object="${categoria}">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="fas fa-tag me-2"></i>
+                            <span id="tituloModal">Nueva Categoría</span>
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" th:field="*{idCategoria}" id="idCategoria">
+                        
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">
+                                <i class="fas fa-tag me-1"></i>Nombre de la Categoría
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   th:field="*{nombre}" 
+                                   id="nombre" 
+                                   placeholder="Ingrese el nombre de la categoría"
+                                   required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}">
+                                Error en el nombre
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       th:field="*{activo}" 
+                                       id="activo" 
+                                       checked>
+                                <label class="form-check-label" for="activo">
+                                    <i class="fas fa-toggle-on me-1"></i>Categoría activa
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function editarCategoria(id, nombre, activo) {
+            document.getElementById('idCategoria').value = id;
+            document.getElementById('nombre').value = nombre;
+            document.getElementById('activo').checked = activo;
+            document.getElementById('tituloModal').textContent = 'Editar Categoría';
+            
+            const modal = new bootstrap.Modal(document.getElementById('modalCategoria'));
+            modal.show();
+        }
+        
+        function toggleEstado(id, estadoActual) {
+            if (confirm('¿Está seguro de cambiar el estado de esta categoría?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/categorias/toggle/' + id;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+        
+        function eliminarCategoria(id) {
+            if (confirm('¿Está seguro de eliminar esta categoría? Esta acción no se puede deshacer.')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/categorias/eliminar/' + id;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+        
+        // Limpiar formulario al cerrar modal
+        document.getElementById('modalCategoria').addEventListener('hidden.bs.modal', function () {
+            document.getElementById('idCategoria').value = '';
+            document.getElementById('nombre').value = '';
+            document.getElementById('activo').checked = true;
+            document.getElementById('tituloModal').textContent = 'Nueva Categoría';
+        });
+    </script>
+</body>
+</html>

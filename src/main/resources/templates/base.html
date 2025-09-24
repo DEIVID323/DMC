@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: 'Sistema de Gestión'">Sistema de Gestión</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+
+<body>
+    <!-- Botón para alternar la barra lateral (visible solo si hay usuario autenticado) -->
+    <div th:if="${#authentication != null and #authentication.principal != 'anonymousUser'}">
+        <button class="btn sidebar-toggler" type="button" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <div class="sidebar" id="sidebar">
+            <a class="navbar-brand" th:href="@{/home}">
+                <th:block th:if="${logoExists}">
+                    <img th:src="@{/img/logo.png?v=${systemTime}}" alt="Logo"
+                        style="max-height: 40px; max-width: 100%;">
+                </th:block>
+                <th:block th:unless="${logoExists}">
+                    <i class="fas fa-store"></i> <span th:text="${appName} ?: 'GestiónPRO'"></span>
+                </th:block>
+            </a>
+
+            <ul class="nav flex-column">
+                <!-- Dashboard -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('dashboard_ver'))}">
+                    <a class="nav-link" th:href="@{/home}"><i class="fas fa-tachometer-alt fa-fw me-2"></i>Dashboard</a>
+                </li>
+
+                <!-- Punto de Venta -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('ventas_crear'))}">
+                    <a class="nav-link" th:href="@{/venta}"><i class="fas fa-cash-register fa-fw me-2"></i>Punto de
+                        Venta</a>
+                </li>
+
+                <!-- Historial de Ventas -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('ventas_ver_listado'))}">
+                    <a class="nav-link" th:href="@{/venta/historial}"><i class="fas fa-history fa-fw me-2"></i>Historial
+                        de Ventas</a>
+                </li>
+
+                <!-- Inventario -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('productos_ver_lista'))}">
+                    <a class="nav-link" th:href="@{/producto}"><i class="fas fa-box-open fa-fw me-2"></i>Inventario</a>
+                </li>
+
+                <!-- Categorías -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('categorias_ver_lista'))}">
+                    <a class="nav-link" th:href="@{/categoria}"><i class="fas fa-tags fa-fw me-2"></i>Categorías</a>
+                </li>
+
+                <!-- Almacenes -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('almacenes_gestionar'))}">
+                    <a class="nav-link" th:href="@{/almacen}"><i class="fas fa-warehouse fa-fw me-2"></i>Almacenes</a>
+                </li>
+
+                <!-- Transferencias -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('transferencias_crear'))}">
+                    <a class="nav-link" th:href="@{/transferencia}"><i
+                            class="fas fa-people-carry fa-fw me-2"></i>Transferencias</a>
+                </li>
+
+                <!-- Compras -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('compras_ver_lista'))}">
+                    <a class="nav-link" th:href="@{/compra}"><i class="fas fa-truck fa-fw me-2"></i>Compras</a>
+                </li>
+
+                <!-- Proveedores -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('proveedores_ver_lista'))}">
+                    <a class="nav-link" th:href="@{/proveedor}"><i
+                            class="fas fa-truck-loading fa-fw me-2"></i>Proveedores</a>
+                </li>
+
+                <!-- Clientes -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('clientes_ver_lista'))}">
+                    <a class="nav-link" th:href="@{/cliente}"><i class="fas fa-users fa-fw me-2"></i>Clientes</a>
+                </li>
+
+                <!-- Caja -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('caja_gestionar'))}">
+                    <a class="nav-link" th:href="@{/caja}"><i class="fas fa-calculator fa-fw me-2"></i>Caja</a>
+                </li>
+
+                <!-- Reportes -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('reportes_ver_ventas')) or #lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('reportes_ver_inventario'))}">
+                    <a class="nav-link" th:href="@{/reporte}"><i class="fas fa-chart-line fa-fw me-2"></i>Reportes</a>
+                </li>
+
+                <!-- Usuarios -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('usuarios_ver_lista'))}">
+                    <a class="nav-link" th:href="@{/usuario}"><i class="fas fa-users-cog fa-fw me-2"></i>Usuarios</a>
+                </li>
+
+                <!-- Tipo de Cambio -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('tipocambio_ver_lista'))}">
+                    <a class="nav-link" th:href="@{/tipocambio}"><i class="fas fa-exchange-alt fa-fw me-2"></i>Tipo de
+                        Cambio</a>
+                </li>
+
+                <!-- Monedas -->
+                <li class="nav-item"
+                    th:if="${#lists.contains(authorities, T(com.example.DMC.model.Permiso).valueOf('tipomoneda_gestionar'))}">
+                    <a class="nav-link" th:href="@{/tipomoneda}"><i class="fas fa-coins fa-fw me-2"></i>Monedas</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Encabezado superior -->
+    <div th:if="${#authentication != null and #authentication.principal != 'anonymousUser'}">
+        <header class="top-header d-flex justify-content-end align-items-center">
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-user me-1"></i> <span
+                        th:text="${#authentication.principal.nombreCompleto} ?: 'Usuario'"></span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" th:href="@{/perfil}">Mi Perfil</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" th:href="@{/auth/logout}">Cerrar Sesión</a></li>
+                </ul>
+            </div>
+        </header>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="main-content d-flex flex-column">
+        <main class="flex-grow-1" th:fragment="content">
+            <!-- Contenido dinámico se inyecta aquí por vistas que extienden esta plantilla -->
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-dark text-white text-center p-3 mt-4">
+            <p>&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> - Sistema de Gestión - Todos
+                los derechos reservados.</p>
+        </footer>
+
+        <!-- Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+        <script th:src="@{/js/scripts.js}"></script>
+</body>
+
+</html>

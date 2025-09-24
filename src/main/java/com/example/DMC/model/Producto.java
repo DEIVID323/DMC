@@ -3,7 +3,7 @@ package com.example.DMC.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.example.DMC.model.Proveedores.Proveedor;
+
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

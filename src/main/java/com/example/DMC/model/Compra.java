@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.example.DMC.enums.EstadoCompra;
-import com.example.DMC.model.Proveedores.Proveedor;
+
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -55,4 +55,7 @@ public class Compra {
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
     private EstadoCompra estado = EstadoCompra.solicitada;
+
+    public void setIdCompra(Integer id) {
+    }
 }
