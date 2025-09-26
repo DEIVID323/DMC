@@ -26,12 +26,12 @@ import org.springframework.web.bind.annotation.GetMapping;
             return "dashboard";
         }
        
-    /* @GetMapping("/hola")
+     @GetMapping("/hola")
     public String usuario(Model model) {
         String username = "Invitado";
         model.addAttribute("mensaje", username);
         return "index";
         
     }
- */
+ 
 }

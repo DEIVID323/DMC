@@ -18,6 +18,8 @@ public class CompraService {
         return repository.findAll();
     }
 
+    
+
     public Optional<Compra> findById(Integer id) {
         return repository.findById(id);
     }

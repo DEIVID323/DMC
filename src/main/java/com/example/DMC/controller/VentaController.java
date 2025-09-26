@@ -12,6 +12,7 @@ import java.util.List;
 @RequestMapping("/api/ventas") // 👈 prefijo para los endpoints
 public class VentaController {
 
+    
     @Autowired
     private VentaService ventaService;
 

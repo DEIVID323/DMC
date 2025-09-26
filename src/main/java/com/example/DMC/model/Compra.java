@@ -57,5 +57,7 @@ public class Compra {
     private EstadoCompra estado = EstadoCompra.solicitada;
 
     public void setIdCompra(Integer id) {
+        this.idCompra = id;
     }
+
 }

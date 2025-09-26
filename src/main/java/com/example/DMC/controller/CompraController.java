@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,16 +15,26 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.example.DMC.model.Compra;
 import com.example.DMC.service.CompraService;
 
-@RestController
-@RequestMapping("/api/compras")
+@Controller
 public class CompraController {
     @Autowired
     private CompraService service;
 
+    @GetMapping("/compras")
+    public String getAllCompras(Model model) {
+        model.addAttribute("compras", service.findAll());
+        return "Compras/compra";
+    }
+
+
+
+
+
+
+
+/* 
     @GetMapping
     @PreAuthorize("hasRole('admin')")
     public List<Compra> getAll() {
@@ -55,5 +67,5 @@ public class CompraController {
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
-    }
+    } */
 }

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Compras</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4 text-center">Gestión de Compras</h1>
+
+        <!-- Botón para crear nueva compra (abre modal de ejemplo) -->
+        <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createCompraModal">
+            <i class="bi bi-plus-lg"></i> Agregar Compra
+        </button>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>ID</th>
+                        <th>Proveedor</th>
+                        <th>Almacén</th>
+                        <th>Usuario</th>
+                        <th>Fecha de Compra</th>
+                        <th>Total</th>
+                        <th>Fecha de Recepción</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <!-- Si la lista viene vacía, mostramos mensaje -->
+                    <tr th:if="${#lists.isEmpty(compras)}">
+                        <td colspan="9" class="text-center">No hay órdenes de compra registradas.</td>
+                    </tr>
+
+                    <!-- Iteración segura de compras -->
+                    <tr th:each="compra : ${compras}">
+                        <td th:text="${compra.idCompra}">1</td>
+
+                        <!-- Relaciones protegidas con ternario -->
+                        <td th:text="${compra.proveedor != null ? compra.proveedor.nombreProveedor : 'No asignado'}">
+                            Proveedor</td>
+                        <td th:text="${compra.almacen != null ? compra.almacen.nombre : 'No asignado'}">Almacén</td>
+                        <td th:text="${compra.usuario != null ? compra.usuario.nombreUsuario : 'No asignado'}">Usuario
+                        </td>
+
+                        <!-- Fechas y números con utilidades de Thymeleaf -->
+                        <td
+                            th:text="${compra.fechaCompra != null ? #temporals.format(compra.fechaCompra, 'dd/MM/yyyy HH:mm') : 'Sin fecha'}">
+                            01/01/2025 00:00</td>
+                        <td
+                            th:text="${compra.totalCompra != null ? #numbers.formatDecimal(compra.totalCompra, 2, 2) : '0.00'}">
+                            0.00</td>
+                        <td
+                            th:text="${compra.fechaRecepcion != null ? #temporals.format(compra.fechaRecepcion, 'dd/MM/yyyy HH:mm') : 'Pendiente'}">
+                            Pendiente</td>
+
+                        <!-- Enum/estado: mostramos la cadena tal cual (asegúrate que coincida con tu enum en BD) -->
+                        <td>
+                            <span th:text="${compra.estado}">estado</span>
+                        </td>
+
+                        <!-- Acciones: editar (modal por id) y eliminar -->
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-warning me-1" type="button" data-bs-toggle="modal"
+                                th:data-bs-target="'#editCompraModal__' + ${compra.idCompra}">
+                                Editar
+                            </button>
+
+                            <a th:href="@{/compras/eliminar/{id}(id=${compra.idCompra})}" class="btn btn-sm btn-danger"
+                                onclick="return confirm('¿Seguro que deseas eliminar esta compra?')">
+                                Eliminar
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
+
+
+        <!-- Modal CREAR (opcional, a implementar si necesario) -->
+        <!-- <div class="modal fade" id="createCompraModal" tabindex="-1" aria-labelledby="createCompraModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <form th:action="@{/compras/guardar}" th:object="${newCompra}" method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Nueva Compra</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body row g-3">-->
+                            <!-- Form fields to be added based on requirements -->
+                        <!-- </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div> 
+        </div> -->
+
+        <!-- Modal EDITAR (uno por compra) -->
+       <!--  <div th:each="compra : ${compras}" th:id="'editCompraModal__' + ${compra.idCompra}" class="modal fade"
+            tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <form th:action="@{/compras/actualizar}" th:object="${compra}" method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Editar Compra</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body row g-3">
+                            <input type="hidden" th:field="*{idCompra}">
+                            <div class="col-md-6">
+                                <label class="form-label">Proveedor</label>
+                                <select th:field="*{proveedor}" class="form-select" required>
+                                    <option value="">Seleccione...</option>
+                                    <option th:each="p : ${proveedores}" th:value="${p}" th:text="${p.nombreProveedor}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Almacén</label>
+                                <select th:field="*{almacen}" class="form-select">
+                                    <option value="">Seleccione...</option>
+                                    <option th:each="a : ${almacenes}" th:value="${a}" th:text="${a.nombre}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Usuario</label>
+                                <select th:field="*{usuario}" class="form-select" required>
+                                    <option value="">Seleccione...</option>
+                                    <option th:each="u : ${usuarios}" th:value="${u}" th:text="${u.nombreUsuario}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Total</label>
+                                <input type="number" step="0.01" th:field="*{totalCompra}" class="form-control"
+                                    required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Fecha de Recepción</label>
+                                <input type="datetime-local" th:field="*{fechaRecepcion}" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Estado</label>
+                                <select th:field="*{estado}" class="form-select" required>
+                                    <option th:each="estado : ${T(com.example.DMC.enums.EstadoCompra).values()}"
+                                        th:value="${estado}" th:text="${estado}"></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success">Actualizar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
