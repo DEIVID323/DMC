@@ -1,9 +1,5 @@
 package com.example.DMC.service;
 
-
-
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,4 +29,5 @@ public class CategoriaService {
     public void deleteById(Integer id) {
         repository.deleteById(id);
     }
+    
 }

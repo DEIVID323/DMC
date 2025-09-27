@@ -11,12 +11,38 @@
     <div class="container mt-5">
         <h1 class="mb-4 text-center">Gestión de Inventario - Productos</h1>
 
-        <!-- Botón para abrir modal de crear producto -->
+        <!-- Alertas por Flash Attributes -->
+        <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>✔️</strong> <span th:text="${mensaje}">Operación exitosa.</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>⚠️</strong> <span th:text="${error}">Ocurrió un error.</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Alertas por Query Params (opcional) -->
+        <div th:if="${param.ok}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>✔️</strong>
+            <span th:switch="${param.ok}">
+                <span th:case="'creado'">Producto agregado correctamente.</span>
+                <span th:case="'actualizado'">Producto actualizado correctamente.</span>
+                <span th:case="'eliminado'">Producto eliminado correctamente.</span>
+                <span th:case="*">Operación realizada correctamente.</span>
+            </span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${param.err}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>⚠️</strong> <span th:text="${param.err}">Ocurrió un error.</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Botón crear -->
         <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createProductoModal">
             Agregar Producto
         </button>
 
-        <!-- Tabla de productos -->
+        <!-- Tabla -->
         <table class="table table-bordered table-hover align-middle">
             <thead class="table-dark text-center">
                 <tr>
@@ -54,7 +80,6 @@
                     <td th:text="${producto.activo ? 'Sí' : 'No'}"></td>
                     <td th:text="${#temporals.format(producto.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
                     <td class="text-center">
-                        <!-- Botón editar con ID dinámico -->
                         <button class="btn btn-sm btn-warning"
                             th:attr="data-bs-target='#editProductoModal' + ${producto.idProducto}"
                             data-bs-toggle="modal">
@@ -80,6 +105,7 @@
                         <h5 class="modal-title">Nuevo Producto</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
+
                     <div class="modal-body row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Código Barra</label>
@@ -89,19 +115,25 @@
                             <label class="form-label">Nombre</label>
                             <input type="text" th:field="*{nombre}" class="form-control" required>
                         </div>
+
                         <div class="col-12">
                             <label class="form-label">Descripción</label>
                             <textarea th:field="*{descripcion}" class="form-control"></textarea>
                         </div>
-                        <!-- Categoría -->
+
+                        <!-- Categoría: SOLO ACTIVAS -->
                         <div class="col-md-6">
                             <label class="form-label">Categoría</label>
                             <select name="idCategoria" class="form-select" required>
                                 <option value="">Seleccione...</option>
-                                <option th:each="c : ${categorias}" th:value="${c.idCategoria}" th:text="${c.nombre}"></option>
+                                <option th:each="c : ${categorias}" th:if="${c.activo}" 
+                                    th:value="${c.idCategoria}"
+                                    th:text="${c.nombre}">
+                                </option>
                             </select>
+                            <div class="form-text text-muted">Solo se pueden asociar categorías activas.</div>
                         </div>
-                        
+
                         <!-- Almacén -->
                         <div class="col-md-6">
                             <label class="form-label">Almacén</label>
@@ -110,13 +142,14 @@
                                 <option th:each="a : ${almacenes}" th:value="${a.id}" th:text="${a.nombre}"></option>
                             </select>
                         </div>
-                        
+
                         <!-- Proveedor -->
                         <div class="col-md-6">
                             <label class="form-label">Proveedor</label>
                             <select name="idProveedor" class="form-select">
                                 <option value="">Seleccione...</option>
-                                <option th:each="p : ${proveedores}" th:value="${p.idProveedor}" th:text="${p.nombreProveedor}"></option>
+                                <option th:each="p : ${proveedores}" th:value="${p.idProveedor}"
+                                    th:text="${p.nombreProveedor}"></option>
                             </select>
                         </div>
 
@@ -136,11 +169,13 @@
                             <label class="form-label">Stock Mínimo</label>
                             <input type="number" th:field="*{stockMinimo}" class="form-control" required>
                         </div>
+
                         <div class="col-md-3 form-check mt-4">
-                            <input type="checkbox" th:field="*{activo}" class="form-check-input">
-                            <label class="form-check-label">Activo</label>
+                            <input type="checkbox" th:field="*{activo}" class="form-check-input" id="chkActivoCreate">
+                            <label class="form-check-label" for="chkActivoCreate">Activo</label>
                         </div>
                     </div>
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary">Guardar</button>
@@ -160,6 +195,7 @@
                         <h5 class="modal-title">Editar Producto</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
+
                     <div class="modal-body row g-3">
                         <input type="hidden" th:value="${producto.idProducto}" name="idProducto">
 
@@ -173,22 +209,29 @@
                             <input type="text" th:value="${producto.nombre}" name="nombre" class="form-control"
                                 required>
                         </div>
+
                         <div class="col-12">
                             <label class="form-label">Descripción</label>
                             <textarea name="descripcion" class="form-control"
                                 th:text="${producto.descripcion}"></textarea>
                         </div>
-                        <!-- Categoría -->
+
+                        <!-- Categoría: mostrar todas, DESHABILITAR inactivas (salvo la seleccionada) -->
                         <div class="col-md-6">
                             <label class="form-label">Categoría</label>
                             <select name="idCategoria" class="form-select" required>
                                 <option value="">Seleccione...</option>
-                                <option th:each="c : ${categorias}" th:value="${c.idCategoria}" th:text="${c.nombre}"
-                                    th:selected="${producto.categoria != null && producto.categoria.idCategoria == c.idCategoria}">
+                                <option th:each="c : ${categorias}" th:value="${c.idCategoria}"
+                                    th:text="${c.activo ? c.nombre : c.nombre + ' (Inactiva)'}"
+                                    th:selected="${producto.categoria != null && producto.categoria.idCategoria == c.idCategoria}"
+                                    th:attr="disabled=${!c.activo and !(producto.categoria != null and producto.categoria.idCategoria == c.idCategoria)}">
                                 </option>
                             </select>
+                            <div class="form-text" th:if="${producto.categoria != null and !producto.categoria.activo}">
+                                Esta categoría está inactiva; puedes cambiarla por una activa.
+                            </div>
                         </div>
-                        
+
                         <!-- Almacén -->
                         <div class="col-md-6">
                             <label class="form-label">Almacén</label>
@@ -199,13 +242,14 @@
                                 </option>
                             </select>
                         </div>
-                        
+
                         <!-- Proveedor -->
                         <div class="col-md-6">
                             <label class="form-label">Proveedor</label>
                             <select name="idProveedor" class="form-select">
                                 <option value="">Seleccione...</option>
-                                <option th:each="p : ${proveedores}" th:value="${p.idProveedor}" th:text="${p.nombreProveedor}"
+                                <option th:each="p : ${proveedores}" th:value="${p.idProveedor}"
+                                    th:text="${p.nombreProveedor}"
                                     th:selected="${producto.proveedorPreferido != null && producto.proveedorPreferido.idProveedor == p.idProveedor}">
                                 </option>
                             </select>
@@ -231,18 +275,17 @@
                             <input type="number" th:value="${producto.stockMinimo}" name="stockMinimo"
                                 class="form-control" required>
                         </div>
-                        <!-- Ejemplo del fragmento del checkbox (en cada modal CREAR/EDITAR) -->
+
+                        <!-- Checkbox activo (patrón sin JS) -->
                         <div class="col-md-3 form-check mt-4">
-                            <!-- Checkbox (envía "true" si está marcado) -->
-                            <input type="checkbox" name="activo" value="true" th:checked="${producto.activo}" class="form-check-input"
-                                th:id="'chkActivo__' + ${producto.idProducto}" />
-                            <label class="form-check-label" th:for="'chkActivo__' + ${producto.idProducto}">Activo</label>
-                        
-                            <!-- Hidden AFTER the checkbox: si el checkbox está desmarcado, sólo llega este valor "false" -->
+                            <input type="checkbox" name="activo" value="true" th:checked="${producto.activo}"
+                                class="form-check-input" th:id="'chkActivo__' + ${producto.idProducto}">
+                            <label class="form-check-label"
+                                th:for="'chkActivo__' + ${producto.idProducto}">Activo</label>
                             <input type="hidden" name="activo" value="false" />
                         </div>
-
                     </div>
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-success">Actualizar</button>
