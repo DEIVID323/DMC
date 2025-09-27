@@ -45,17 +45,19 @@
                     <td th:text="${producto.categoria != null ? producto.categoria.nombre : 'Sin categoría'}"></td>
                     <td th:text="${producto.almacen != null ? producto.almacen.nombre : 'Sin almacén'}"></td>
                     <td
-                        th:text="${producto.proveedorPreferido != null ? producto.proveedorPreferido.nombre : 'Sin proveedor'}">
+                        th:text="${producto.proveedorPreferido != null ? producto.proveedorPreferido.nombreProveedor : 'Sin proveedor'}">
                     </td>
                     <td th:text="${producto.precioCompra}"></td>
                     <td th:text="${producto.precioVenta}"></td>
                     <td th:text="${producto.stock}"></td>
                     <td th:text="${producto.stockMinimo}"></td>
-                    <td th:text="${producto.activo == true ? 'Sí' : 'No'}"></td>
+                    <td th:text="${producto.activo ? 'Sí' : 'No'}"></td>
                     <td th:text="${#temporals.format(producto.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                            th:attr="data-bs-target='#editProductoModal' + ${producto.idProducto}">
+                        <!-- Botón editar con ID dinámico -->
+                        <button class="btn btn-sm btn-warning"
+                            th:attr="data-bs-target='#editProductoModal' + ${producto.idProducto}"
+                            data-bs-toggle="modal">
                             Editar
                         </button>
                         <a th:href="@{/productos/eliminar/{id}(id=${producto.idProducto})}"
@@ -70,14 +72,13 @@
     </div>
 
     <!-- Modal CREAR -->
-   <!--  <div class="modal fade" id="createProductoModal" tabindex="-1" aria-labelledby="createProductoModalLabel"
-        aria-hidden="true">
+    <div class="modal fade" id="createProductoModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form th:action="@{/productos/guardar}" th:object="${newProducto}" method="post">
                     <div class="modal-header">
                         <h5 class="modal-title">Nuevo Producto</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body row g-3">
                         <div class="col-md-6">
@@ -92,27 +93,33 @@
                             <label class="form-label">Descripción</label>
                             <textarea th:field="*{descripcion}" class="form-control"></textarea>
                         </div>
+                        <!-- Categoría -->
                         <div class="col-md-6">
                             <label class="form-label">Categoría</label>
-                            <select th:field="*{categoria.id}" class="form-select" required>
+                            <select name="idCategoria" class="form-select" required>
                                 <option value="">Seleccione...</option>
-                                <option th:each="c : ${categorias}" th:value="${c.id}" th:text="${c.nombre}"></option>
+                                <option th:each="c : ${categorias}" th:value="${c.idCategoria}" th:text="${c.nombre}"></option>
                             </select>
                         </div>
+                        
+                        <!-- Almacén -->
                         <div class="col-md-6">
                             <label class="form-label">Almacén</label>
-                            <select th:field="*{almacen.id}" class="form-select" required>
+                            <select name="idAlmacen" class="form-select" required>
                                 <option value="">Seleccione...</option>
                                 <option th:each="a : ${almacenes}" th:value="${a.id}" th:text="${a.nombre}"></option>
                             </select>
                         </div>
+                        
+                        <!-- Proveedor -->
                         <div class="col-md-6">
                             <label class="form-label">Proveedor</label>
-                            <select th:field="*{proveedorPreferido.id}" class="form-select">
+                            <select name="idProveedor" class="form-select">
                                 <option value="">Seleccione...</option>
-                                <option th:each="p : ${proveedores}" th:value="${p.id}" th:text="${p.nombre}"></option>
+                                <option th:each="p : ${proveedores}" th:value="${p.idProveedor}" th:text="${p.nombreProveedor}"></option>
                             </select>
                         </div>
+
                         <div class="col-md-3">
                             <label class="form-label">Precio Compra</label>
                             <input type="number" step="0.01" th:field="*{precioCompra}" class="form-control" required>
@@ -142,19 +149,20 @@
             </div>
         </div>
     </div>
- -->
-    <!-- Modales EDITAR (uno por cada producto) -->
-     <div th:each="producto : ${productos}" th:id="'editProductoModal' + ${producto.idProducto}" class="modal fade"
+
+    <!-- Modales EDITAR -->
+    <div th:each="producto : ${productos}" class="modal fade" th:id="'editProductoModal' + ${producto.idProducto}"
         tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form th:action="@{/productos/actualizar}" method="post">
                     <div class="modal-header">
                         <h5 class="modal-title">Editar Producto</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body row g-3">
                         <input type="hidden" th:value="${producto.idProducto}" name="idProducto">
+
                         <div class="col-md-6">
                             <label class="form-label">Código Barra</label>
                             <input type="text" th:value="${producto.codigoBarra}" name="codigoBarra"
@@ -167,35 +175,42 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">Descripción</label>
-                            <textarea th:text="${producto.descripcion}" name="descripcion"
-                                class="form-control"></textarea>
+                            <textarea name="descripcion" class="form-control"
+                                th:text="${producto.descripcion}"></textarea>
                         </div>
+                        <!-- Categoría -->
                         <div class="col-md-6">
                             <label class="form-label">Categoría</label>
-                            <select name="categoria.id" class="form-select" required>
+                            <select name="idCategoria" class="form-select" required>
                                 <option value="">Seleccione...</option>
-                                <option th:each="c : ${categorias}" th:value="${c.id}" th:text="${c.nombre}"
-                                    th:selected="${producto.categoria != null && producto.categoria.id == c.id}">
+                                <option th:each="c : ${categorias}" th:value="${c.idCategoria}" th:text="${c.nombre}"
+                                    th:selected="${producto.categoria != null && producto.categoria.idCategoria == c.idCategoria}">
                                 </option>
                             </select>
                         </div>
+                        
+                        <!-- Almacén -->
                         <div class="col-md-6">
                             <label class="form-label">Almacén</label>
-                            <select name="almacen.id" class="form-select" required>
+                            <select name="idAlmacen" class="form-select" required>
                                 <option value="">Seleccione...</option>
                                 <option th:each="a : ${almacenes}" th:value="${a.id}" th:text="${a.nombre}"
-                                    th:selected="${producto.almacen != null && producto.almacen.id == a.id}"></option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Proveedor</label>
-                            <select name="proveedorPreferido.id" class="form-select">
-                                <option value="">Seleccione...</option>
-                                <option th:each="p : ${proveedores}" th:value="${p.id}" th:text="${p.nombre}"
-                                    th:selected="${producto.proveedorPreferido != null && producto.proveedorPreferido.id == p.id}">
+                                    th:selected="${producto.almacen != null && producto.almacen.id == a.id}">
                                 </option>
                             </select>
                         </div>
+                        
+                        <!-- Proveedor -->
+                        <div class="col-md-6">
+                            <label class="form-label">Proveedor</label>
+                            <select name="idProveedor" class="form-select">
+                                <option value="">Seleccione...</option>
+                                <option th:each="p : ${proveedores}" th:value="${p.idProveedor}" th:text="${p.nombreProveedor}"
+                                    th:selected="${producto.proveedorPreferido != null && producto.proveedorPreferido.idProveedor == p.idProveedor}">
+                                </option>
+                            </select>
+                        </div>
+
                         <div class="col-md-3">
                             <label class="form-label">Precio Compra</label>
                             <input type="number" step="0.01" th:value="${producto.precioCompra}" name="precioCompra"
@@ -216,11 +231,17 @@
                             <input type="number" th:value="${producto.stockMinimo}" name="stockMinimo"
                                 class="form-control" required>
                         </div>
+                        <!-- Ejemplo del fragmento del checkbox (en cada modal CREAR/EDITAR) -->
                         <div class="col-md-3 form-check mt-4">
-                            <input type="checkbox" th:checked="${producto.activo}" name="activo"
-                                class="form-check-input">
-                            <label class="form-check-label">Activo</label>
+                            <!-- Checkbox (envía "true" si está marcado) -->
+                            <input type="checkbox" name="activo" value="true" th:checked="${producto.activo}" class="form-check-input"
+                                th:id="'chkActivo__' + ${producto.idProducto}" />
+                            <label class="form-check-label" th:for="'chkActivo__' + ${producto.idProducto}">Activo</label>
+                        
+                            <!-- Hidden AFTER the checkbox: si el checkbox está desmarcado, sólo llega este valor "false" -->
+                            <input type="hidden" name="activo" value="false" />
                         </div>
+
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -230,7 +251,7 @@
             </div>
         </div>
     </div>
- 
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 

@@ -1,59 +1,125 @@
 package com.example.DMC.controller;
 
-import java.util.List;
+import com.example.DMC.model.Producto;
+import com.example.DMC.model.Categoria;
+import com.example.DMC.model.Almacen;
+import com.example.DMC.model.Proveedor;
+import com.example.DMC.repository.ProductoRepository;
+import com.example.DMC.repository.CategoriaRepository;
+import com.example.DMC.repository.AlmacenRepository;
+import com.example.DMC.repository.ProveedorRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.*;
 
-import com.example.DMC.model.Producto;
-import com.example.DMC.service.AlmacenService;
-import com.example.DMC.service.CategoriaService;
-import com.example.DMC.service.ProductoService;
-import com.example.DMC.service.ProveedorService;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
+@RequestMapping("/productos")
 public class ProductoController {
-    @Autowired
-    private ProductoService service;
-    @Autowired
-    private CategoriaService categoriaService; // necesitas inyectar estos servicios
-    @Autowired
-    private AlmacenService almacenService;
-    @Autowired
-    
-    private ProveedorService proveedorService;
 
-    @GetMapping("/productos")
-    public String getAllProductos(Model model) {
-        model.addAttribute("productos", service.findAll());
-        model.addAttribute("categorias", categoriaService.findAll()); // necesitas inyectar categoriaService
-        model.addAttribute("almacenes", almacenService.findAll()); // idem
-        model.addAttribute("proveedores", proveedorService.findAll()); // idem
+    private final ProductoRepository productoRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final AlmacenRepository almacenRepository;
+    private final ProveedorRepository proveedorRepository;
+
+    public ProductoController(ProductoRepository productoRepository,
+            CategoriaRepository categoriaRepository,
+            AlmacenRepository almacenRepository,
+            ProveedorRepository proveedorRepository) {
+        this.productoRepository = productoRepository;
+        this.categoriaRepository = categoriaRepository;
+        this.almacenRepository = almacenRepository;
+        this.proveedorRepository = proveedorRepository;
+    }
+
+    // Listar productos
+    @GetMapping
+    public String listarProductos(Model model) {
+        List<Producto> productos = productoRepository.findAll();
+        model.addAttribute("productos", productos);
         model.addAttribute("newProducto", new Producto());
+
+        model.addAttribute("categorias", categoriaRepository.findAll());
+        model.addAttribute("almacenes", almacenRepository.findAll());
+        model.addAttribute("proveedores", proveedorRepository.findAll());
+
         return "Productos/producto";
     }
-@PostMapping("/guardar")
-public String guardarProducto(@ModelAttribute Producto producto, RedirectAttributes redirectAttributes) {
-    // El controller debería manejar la conversión de IDs a objetos
-    service.save(producto);
-    return "redirect:/productos";
+
+    // Guardar producto (crear)
+    @PostMapping("/guardar")
+    public String guardarProducto(@RequestParam("idCategoria") Integer idCategoria,
+            @RequestParam("idAlmacen") Integer idAlmacen,
+            @RequestParam(value = "idProveedor", required = false) Integer idProveedor,
+            @RequestParam(value = "activo", defaultValue = "false") boolean activo,
+            @ModelAttribute Producto producto) {
+
+        producto.setCategoria(categoriaRepository.findById(idCategoria).orElse(null));
+        producto.setAlmacen(almacenRepository.findById(idAlmacen).orElse(null));
+        if (idProveedor != null) {
+            producto.setProveedorPreferido(proveedorRepository.findById(idProveedor).orElse(null));
+        } else {
+            producto.setProveedorPreferido(null);
+        }
+
+        producto.setActivo(activo);
+        producto.setFechaCreacion(LocalDateTime.now());
+        producto.setFechaActualizacion(LocalDateTime.now());
+
+        productoRepository.save(producto);
+        return "redirect:/productos";
+    }
+
+    // Actualizar producto (mejor: traer de BD y actualizar campos)
+    @PostMapping("/actualizar")
+    public String actualizarProducto(
+            @RequestParam("idProducto") Integer idProducto,
+            @RequestParam("idCategoria") Integer idCategoria,
+            @RequestParam("idAlmacen") Integer idAlmacen,
+            @RequestParam(value = "idProveedor", required = false) Integer idProveedor,
+            @RequestParam(value = "activo", defaultValue = "false") boolean activo,
+            @ModelAttribute Producto productoForm) {
+
+        Producto producto = productoRepository.findById(idProducto)
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado: " + idProducto));
+
+        // Actualizamos solo los campos editables
+        producto.setCodigoBarra(productoForm.getCodigoBarra());
+        producto.setNombre(productoForm.getNombre());
+        producto.setDescripcion(productoForm.getDescripcion());
+        producto.setPrecioCompra(productoForm.getPrecioCompra());
+        producto.setPrecioVenta(productoForm.getPrecioVenta());
+        producto.setStock(productoForm.getStock());
+        producto.setStockMinimo(productoForm.getStockMinimo());
+
+        producto.setCategoria(categoriaRepository.findById(idCategoria).orElse(null));
+        producto.setAlmacen(almacenRepository.findById(idAlmacen).orElse(null));
+        if (idProveedor != null) {
+            producto.setProveedorPreferido(proveedorRepository.findById(idProveedor).orElse(null));
+        } else {
+            producto.setProveedorPreferido(null);
+        }
+
+        // Aquí se aplica el valor correcto enviado por el formulario
+        producto.setActivo(activo);
+
+        producto.setFechaActualizacion(LocalDateTime.now());
+
+        productoRepository.save(producto);
+
+        return "redirect:/productos";
+    }
+
+    // Eliminar producto
+    @GetMapping("/eliminar/{id}")
+    public String eliminarProducto(@PathVariable Integer id) {
+        productoRepository.deleteById(id);
+        return "redirect:/productos";
+    }
 }
-
-
-
 
 
 /* 
@@ -90,4 +156,4 @@ public String guardarProducto(@ModelAttribute Producto producto, RedirectAttribu
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     } */
-}
+

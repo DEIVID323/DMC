@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Almacenes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4 text-center">Listado de Almacenes</h1>
+
+        <!-- Botón abrir modal Nuevo -->
+        <div class="text-end mb-3">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#guardarModal">
+                Agregar Nuevo Almacén
+            </button>
+        </div>
+
+        <!-- Tabla de almacenes -->
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Ubicación</th>
+                    <th>Activo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="almacen : ${almacenes}">
+                    <td th:text="${almacen.id}"></td>
+                    <td th:text="${almacen.nombre}"></td>
+                    <td th:text="${almacen.ubicacion}"></td>
+                    <td>
+                        <span th:text="${almacen.activo ? 'Sí' : 'No'}"></span>
+                    </td>
+                    <td>
+                        <!-- Botón Editar abre su propio modal -->
+                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                            th:attr="data-bs-target='#editarModal__' + ${almacen.id}">
+                            Editar
+                        </button>
+
+                        <!-- Botón Eliminar -->
+                        <a th:href="@{'/almacenes/eliminar/' + ${almacen.id}}"
+                            class="btn btn-sm btn-danger">Eliminar</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal Guardar (nuevo) -->
+    <div class="modal fade" id="guardarModal" tabindex="-1" aria-labelledby="guardarModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/almacenes/guardar}" th:object="${almacen}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="guardarModalLabel">Nuevo Almacén</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" th:field="*{id}" />
+
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" th:field="*{nombre}" class="form-control"
+                                placeholder="Nombre del almacén" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ubicación</label>
+                            <input type="text" th:field="*{ubicacion}" class="form-control" placeholder="Ej: Tienda 1">
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input type="checkbox" th:field="*{activo}" class="form-check-input">
+                            <label class="form-check-label">Activo</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Guardar</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar (uno por cada almacén) -->
+    <div th:each="almacen : ${almacenes}">
+        <div class="modal fade" th:id="'editarModal__' + ${almacen.id}" tabindex="-1" aria-labelledby="editarModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form th:action="@{/almacenes/guardar}" method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editarModalLabel">Editar Almacén</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- ID oculto -->
+                            <input type="hidden" name="id" th:value="${almacen.id}" />
+
+                            <div class="mb-3">
+                                <label class="form-label">Nombre</label>
+                                <input type="text" name="nombre" th:value="${almacen.nombre}" class="form-control"
+                                    required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Ubicación</label>
+                                <input type="text" name="ubicacion" th:value="${almacen.ubicacion}"
+                                    class="form-control">
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input type="checkbox" name="activo" class="form-check-input"
+                                    th:checked="${almacen.activo}">
+                                <label class="form-check-label">Activo</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Actualizar</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
