@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+</head>
+
+<body>
+    <!-- ====== FRAGMENTO PRINCIPAL ====== -->
+    <div th:fragment="content">
+        <h1 class="text-3xl font-bold text-accent mb-4">Dashboard</h1>
+        <p class="mb-6 text-accent">
+            Bienvenido, <strong id="usuarioNombreBienvenida">Usuario</strong>.
+            Desde aquí puedes gestionar las operaciones del sistema.
+        </p>
+
+        <!-- Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <div
+                class="bg-primary text-accent rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105 animate-slide-in-top border border-secondary">
+                <div class="p-6 flex justify-between items-center">
+                    <div>
+                        <div class="text-4xl font-bold" id="totalVentas">0</div>
+                        <div>Ventas Realizadas</div>
+                    </div>
+                    <i class="fas fa-shopping-cart text-5xl opacity-50"></i>
+                </div>
+                <a class="block p-4 bg-secondary hover:bg-red-700 text-primary transition-colors duration-200 flex justify-between items-center"
+                    href="#" id="btnVerVentas">
+                    <span>Ver Detalles</span> <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+
+            <div
+                class="bg-primary text-accent rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105 animate-slide-in-top border border-secondary">
+                <div class="p-6 flex justify-between items-center">
+                    <div>
+                        <div class="text-4xl font-bold" id="totalCompras">0</div>
+                        <div>Compras Realizadas</div>
+                    </div>
+                    <i class="fas fa-truck text-5xl opacity-50"></i>
+                </div>
+                <a class="block p-4 bg-secondary hover:bg-red-700 text-primary transition-colors duration-200 flex justify-between items-center"
+                    href="/compra">
+                    <span>Ver Detalles</span> <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+
+            <div
+                class="bg-primary text-accent rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105 animate-slide-in-top border border-secondary">
+                <div class="p-6 flex justify-between items-center">
+                    <div>
+                        <div class="text-4xl font-bold" id="totalProductos">0</div>
+                        <div>Productos en Inventario</div>
+                    </div>
+                    <i class="fas fa-box-open text-5xl opacity-50"></i>
+                </div>
+                <a class="block p-4 bg-secondary hover:bg-red-700 text-primary transition-colors duration-200 flex justify-between items-center"
+                    href="/producto">
+                    <span>Ver Detalles</span> <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+
+            <div
+                class="bg-primary text-accent rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105 animate-slide-in-top border border-secondary">
+                <div class="p-6 flex justify-between items-center">
+                    <div>
+                        <div class="text-4xl font-bold" id="totalProductosBajos">0</div>
+                        <div>Productos Bajos de Stock</div>
+                    </div>
+                    <i class="fas fa-exclamation-triangle text-5xl opacity-50"></i>
+                </div>
+                <a class="block p-4 bg-secondary hover:bg-red-700 text-primary transition-colors duration-200 flex justify-between items-center"
+                    href="/reportes/stock-bajo">
+                    <span>Ver Detalles</span> <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Gráfico -->
+        <div class="mt-8">
+            <div class="bg-primary rounded-lg shadow-md overflow-hidden border border-secondary">
+                <div class="p-4 border-b border-gray-200 flex items-center text-accent">
+                    <i class="fas fa-chart-bar mr-2"></i>Ventas de los Últimos 5 Días
+                </div>
+                <div class="p-6">
+                    <canvas id="graficoVentas" class="w-full h-64"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ====== /FRAGMENTO PRINCIPAL ====== -->
+
+    <!-- (Opcional) scripts específicos de esta página -->
+    <th:block th:fragment="pagescripts">
+        <!-- Deja este bloque por si el Dashboard necesita JS adicional en el futuro -->
+    </th:block>
+</body>
+
+</html>

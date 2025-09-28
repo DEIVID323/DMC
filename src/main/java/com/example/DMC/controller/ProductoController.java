@@ -46,6 +46,112 @@ public class ProductoController {
         model.addAttribute("almacenes", almacenRepository.findAll());
         model.addAttribute("proveedores", proveedorRepository.findAll());
 
+        // CORRECCIÓN: La ruta debe ser minúscula si el directorio es minúscula.
+        // Si tu archivo está en `templates/productos/producto.html`, esta es la ruta correcta.
+        model.addAttribute("view", "productos/producto"); 
+        model.addAttribute("activePage", "productos");
+
+        return "layout"; // Esto es correcto y cargará el layout principal
+    }
+    // Guardar producto (crear)
+    @PostMapping("/guardar")
+    public String guardarProducto(@RequestParam("idCategoria") Integer idCategoria,
+            @RequestParam("idAlmacen") Integer idAlmacen,
+            @RequestParam(value = "idProveedor", required = false) Integer idProveedor,
+            @RequestParam(value = "activo", defaultValue = "false") boolean activo,
+            @ModelAttribute Producto producto) {
+
+        producto.setCategoria(categoriaRepository.findById(idCategoria).orElse(null));
+        producto.setAlmacen(almacenRepository.findById(idAlmacen).orElse(null));
+        if (idProveedor != null) {
+            producto.setProveedorPreferido(proveedorRepository.findById(idProveedor).orElse(null));
+        } else {
+            producto.setProveedorPreferido(null);
+        }
+
+        producto.setActivo(activo);
+        producto.setFechaCreacion(LocalDateTime.now());
+        producto.setFechaActualizacion(LocalDateTime.now());
+
+        productoRepository.save(producto);
+        return "redirect:/productos";
+    }
+
+    // Actualizar producto (mejor: traer de BD y actualizar campos)
+    @PostMapping("/actualizar")
+    public String actualizarProducto(
+            @RequestParam("idProducto") Integer idProducto,
+            @RequestParam("idCategoria") Integer idCategoria,
+            @RequestParam("idAlmacen") Integer idAlmacen,
+            @RequestParam(value = "idProveedor", required = false) Integer idProveedor,
+            @RequestParam(value = "activo", defaultValue = "false") boolean activo,
+            @ModelAttribute Producto productoForm) {
+
+        Producto producto = productoRepository.findById(idProducto)
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado: " + idProducto));
+
+        // Actualizamos solo los campos editables
+        producto.setCodigoBarra(productoForm.getCodigoBarra());
+        producto.setNombre(productoForm.getNombre());
+        producto.setDescripcion(productoForm.getDescripcion());
+        producto.setPrecioCompra(productoForm.getPrecioCompra());
+        producto.setPrecioVenta(productoForm.getPrecioVenta());
+        producto.setStock(productoForm.getStock());
+        producto.setStockMinimo(productoForm.getStockMinimo());
+
+        producto.setCategoria(categoriaRepository.findById(idCategoria).orElse(null));
+        producto.setAlmacen(almacenRepository.findById(idAlmacen).orElse(null));
+        if (idProveedor != null) {
+            producto.setProveedorPreferido(proveedorRepository.findById(idProveedor).orElse(null));
+        } else {
+            producto.setProveedorPreferido(null);
+        }
+
+        // Aquí se aplica el valor correcto enviado por el formulario
+        producto.setActivo(activo);
+
+        producto.setFechaActualizacion(LocalDateTime.now());
+
+        productoRepository.save(producto);
+
+        return "redirect:/productos";
+    }
+
+    // Eliminar producto
+    @GetMapping("/eliminar/{id}")
+    public String eliminarProducto(@PathVariable Integer id) {
+        productoRepository.deleteById(id);
+        return "redirect:/productos";
+    }
+}
+
+
+    /* private final ProductoRepository productoRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final AlmacenRepository almacenRepository;
+    private final ProveedorRepository proveedorRepository;
+
+    public ProductoController(ProductoRepository productoRepository,
+            CategoriaRepository categoriaRepository,
+            AlmacenRepository almacenRepository,
+            ProveedorRepository proveedorRepository) {
+        this.productoRepository = productoRepository;
+        this.categoriaRepository = categoriaRepository;
+        this.almacenRepository = almacenRepository;
+        this.proveedorRepository = proveedorRepository;
+    }
+
+    // Listar productos
+    @GetMapping
+    public String listarProductos(Model model) {
+        List<Producto> productos = productoRepository.findAll();
+        model.addAttribute("productos", productos);
+        model.addAttribute("newProducto", new Producto());
+
+        model.addAttribute("categorias", categoriaRepository.findAll());
+        model.addAttribute("almacenes", almacenRepository.findAll());
+        model.addAttribute("proveedores", proveedorRepository.findAll());
+
         return "Productos/producto";
     }
 
@@ -119,7 +225,7 @@ public class ProductoController {
         productoRepository.deleteById(id);
         return "redirect:/productos";
     }
-}
+} */
 
 
 /* 

@@ -1,60 +1,157 @@
 package com.example.DMC.controller;
 
-
 import com.example.DMC.model.Venta;
+import com.example.DMC.model.Cliente;
+import com.example.DMC.model.Producto;
 import com.example.DMC.service.VentaService;
+import com.example.DMC.service.ClienteService;
+import com.example.DMC.service.ProductoService;
+import com.example.DMC.enums.EstadoVenta;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
-@RestController
-@RequestMapping("/api/ventas") // 👈 prefijo para los endpoints
+@Controller
+@RequestMapping("/ventas")
 public class VentaController {
 
-    
     @Autowired
     private VentaService ventaService;
 
-    // Obtener todas las ventas
+    @Autowired
+    private ClienteService clienteService;
+
+    @Autowired
+    private ProductoService productoService;
+
+    // Mostrar POS (Punto de Venta)
     @GetMapping
-    public List<Venta> getAllVentas() {
-        return ventaService.findAll();
+    public String mostrarPOS(Model model) {
+        List<Cliente> clientes = clienteService.findByActivoTrue();
+        model.addAttribute("clientes", clientes);
+
+        // Configuración para el layout
+        model.addAttribute("view", "Ventas/venta");
+        model.addAttribute("activePage", "ventas");
+
+        return "layout";
     }
 
-    // Obtener una venta por ID
-    @GetMapping("/{id}")
-    public Venta getVentaById(@PathVariable Integer id) {
-        return ventaService.findById(id)
-                .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + id));
+    @GetMapping("/historial")
+    public String mostrarHistorial(Model model) {
+        try {
+            List<Venta> ventas = ventaService.findAll();
+
+            // DEBUG: Verificar datos
+            System.out.println("=== DEBUG VENTAS ===");
+            System.out.println("Número de ventas encontradas: " + ventas.size());
+
+            if (!ventas.isEmpty()) {
+                Venta primeraVenta = ventas.get(0);
+                System.out.println("Primera venta - ID: " + primeraVenta.getIdVenta());
+                System.out.println("Primera venta - Total: " + primeraVenta.getTotalVenta());
+                System.out.println("Primera venta - Estado: " + primeraVenta.getEstado());
+            }
+
+            model.addAttribute("ventas", ventas);
+            model.addAttribute("view", "Ventas/ventahistorial");
+            model.addAttribute("activePage", "ventas");
+
+            return "layout";
+
+        } catch (Exception e) {
+            System.err.println("ERROR en mostrarHistorial: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
-    // Crear una nueva venta
-    @PostMapping
-    public Venta createVenta(@RequestBody Venta venta) {
-        return ventaService.save(venta);
+    // API: Buscar productos para el POS
+    @GetMapping("/buscar")
+    @ResponseBody
+    public ResponseEntity<List<Producto>> buscarProductos(@RequestParam("term") String term) {
+        List<Producto> productos = productoService.buscarPorNombreOCodigo(term);
+        return ResponseEntity.ok(productos);
     }
 
-    // Actualizar una venta existente
-    @PutMapping("/{id}")
-    public Venta updateVenta(@PathVariable Integer id, @RequestBody Venta venta) {
-        return ventaService.findById(id)
-                .map(v -> {
-                    v.setIdCliente(venta.getIdCliente());
-                    v.setIdUsuario(venta.getIdUsuario());
-                    v.setFechaVenta(venta.getFechaVenta());
-                    v.setTotalVenta(venta.getTotalVenta());
-                    v.setMetodoPago(venta.getMetodoPago());
-                    v.setEstado(venta.getEstado());
-                    return ventaService.save(v);
-                })
-                .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + id));
+    // API: Guardar venta
+    @PostMapping("/guardar")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> guardarVenta(@RequestBody Map<String, Object> ventaData) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Crear la venta
+            Venta venta = new Venta();
+
+            // Cliente (opcional)
+            String clienteId = (String) ventaData.get("id_cliente");
+            if (clienteId != null && !clienteId.isEmpty()) {
+                venta.setIdCliente(Integer.parseInt(clienteId));
+            }
+
+            // Usuario (temporalmente hardcodeado - deberías obtenerlo del contexto de
+            // seguridad)
+            venta.setIdUsuario(1); // TODO: Obtener del usuario logueado
+
+            venta.setFechaVenta(LocalDateTime.now());
+            venta.setMetodoPago((String) ventaData.get("metodo_pago"));
+            venta.setEstado(EstadoVenta.COMPLETADA);
+
+            // Calcular total y procesar carrito
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> carrito = (List<Map<String, Object>>) ventaData.get("carrito");
+
+            double total = 0.0;
+            for (Map<String, Object> item : carrito) {
+                Integer productoId = (Integer) item.get("id");
+                Integer cantidad = (Integer) item.get("cantidad");
+
+                Producto producto = productoService.findById(productoId)
+                        .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + productoId));
+
+                total += producto.getPrecioVenta().doubleValue() * cantidad;
+
+                // TODO: Aquí deberías guardar los detalles de venta y actualizar stock
+            }
+
+            venta.setTotalVenta(total);
+
+            // Guardar venta
+            Venta ventaGuardada = ventaService.save(venta);
+
+            response.put("success", true);
+            response.put("id_venta", ventaGuardada.getIdVenta());
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        }
+
+        return ResponseEntity.ok(response);
     }
 
-    // Eliminar una venta
-    @DeleteMapping("/{id}")
-    public String deleteVenta(@PathVariable Integer id) {
-        ventaService.deleteById(id);
-        return "Venta con ID " + id + " eliminada correctamente";
+    // Mostrar ticket de venta
+    @GetMapping("/ticket/{id}")
+    public String mostrarTicket(@PathVariable Integer id, Model model) {
+        Venta venta = ventaService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
+
+        model.addAttribute("venta", venta);
+
+        // TODO: Agregar detalles de venta y información del cliente
+        // model.addAttribute("detalles", detalleVentaService.findByVentaId(id));
+        // model.addAttribute("cliente", clienteService.findById(venta.getIdCliente()));
+
+        return "venta-ticket"; // Vista independiente para el ticket
     }
 }

@@ -20,11 +20,24 @@ import org.springframework.web.bind.annotation.GetMapping;
         @Autowired
     private UsuarioService service;
 
-        @GetMapping("/dashboard")
+   
+
+
+     @GetMapping("/dashboard")
+    public String dashboard(Model model) {
+        model.addAttribute("view", "dashboard/index"); // inyecta el fragmento arriba
+        model.addAttribute("pageTitle", "Dashboard");
+        return "layout"; // usa el layout que te dejé completo
+    }
+ 
+
+
+
+       /*  @GetMapping("/dashboard")
         public String showDashboard() {
             // Solo carga el HTML, los datos se llenan desde el frontend
             return "dashboard";
-        }
+        } */
        
      @GetMapping("/hola")
     public String usuario(Model model) {

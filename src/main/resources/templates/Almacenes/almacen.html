@@ -1,140 +1,275 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8">
     <title>Gestión de Almacenes</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Asumimos que Tailwind CSS y Font Awesome son cargados en el layout principal -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
-    <div class="container mt-5">
-        <h1 class="mb-4 text-center">Listado de Almacenes</h1>
+    <div th:fragment="content">
+        <div class="container mx-auto px-4 py-6 min-h-screen">
+            <h1 class="text-3xl font-extrabold text-gray-800 mb-8 text-center border-b-2 pb-2 border-red-500">
+                Gestión de Inventario - Almacenes
+            </h1>
 
-        <!-- Botón abrir modal Nuevo -->
-        <div class="text-end mb-3">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#guardarModal">
-                Agregar Nuevo Almacén
-            </button>
+            <!-- Alertas con estilo Tailwind -->
+            <div th:if="${mensaje}"
+                class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl relative mb-6 shadow-lg"
+                role="alert">
+                <strong class="font-bold mr-2">✔️ Éxito:</strong>
+                <span th:text="${mensaje}"></span>
+            </div>
+            <div th:if="${error}"
+                class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative mb-6 shadow-lg"
+                role="alert">
+                <strong class="font-bold mr-2">⚠️ Error:</strong>
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- Botón para abrir modal de crear -->
+            <div class="mb-6">
+                <button type="button" onclick="openModal('createAlmacenModal')"
+                    class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold shadow-xl hover:bg-red-700 transition-colors duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-red-300">
+                    <i class="fas fa-plus mr-2"></i>Nuevo Almacén
+                </button>
+            </div>
+
+            <!-- Tabla con estilos Tailwind mejorados -->
+            <div class="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table-auto border-collapse">
+                        <thead class="bg-gray-800 text-white sticky top-0">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Nombre</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Ubicación
+                                </th>
+                                <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Activo
+                                </th>
+                                <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr th:each="a : ${almacenes}"
+                                class="odd:bg-white even:bg-gray-50 hover:bg-red-50 transition-colors">
+                                <td class="px-4 py-3 text-sm" th:text="${a.id}">1</td>
+                                <td class="px-4 py-3 text-sm font-semibold text-gray-900" th:text="${a.nombre}">
+                                    Nombre</td>
+                                <td class="px-4 py-3 text-sm text-gray-700" th:text="${a.ubicacion}">
+                                    Ubicación</td>
+                                <td class="px-4 py-3 text-center text-sm">
+                                    <span th:if="${a.activo}"
+                                        class="inline-flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+                                        <i class="fas fa-check-circle mr-1"></i> Sí
+                                    </span>
+                                    <span th:unless="${a.activo}"
+                                        class="inline-flex items-center bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-medium">
+                                        <i class="fas fa-times-circle mr-1"></i> No
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    <div class="flex justify-center space-x-2">
+                                        <!-- Botón EDITAR -->
+                                        <button
+                                            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
+                                            th:onclick="|openModal('editAlmacenModal${a.id}')|">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <!-- Botón ELIMINAR (Usando modal de confirmación custom) -->
+                                        <button
+                                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
+                                            th:onclick="|openConfirmModal('@{/almacenes/eliminar/{id}(id=${a.id})}')|">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <!-- Tabla de almacenes -->
-        <table class="table table-bordered table-striped">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Ubicación</th>
-                    <th>Activo</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="almacen : ${almacenes}">
-                    <td th:text="${almacen.id}"></td>
-                    <td th:text="${almacen.nombre}"></td>
-                    <td th:text="${almacen.ubicacion}"></td>
-                    <td>
-                        <span th:text="${almacen.activo ? 'Sí' : 'No'}"></span>
-                    </td>
-                    <td>
-                        <!-- Botón Editar abre su propio modal -->
-                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-                            th:attr="data-bs-target='#editarModal__' + ${almacen.id}">
-                            Editar
+        <!-- MODAL CREAR (Tailwind/JS) -->
+        <div id="createAlmacenModal"
+            class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 hidden">
+            <div
+                class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 my-8 max-h-[90vh] overflow-hidden transform scale-100 transition-transform duration-300">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                    <h5 class="text-2xl font-bold text-gray-800">Nuevo Almacén</h5>
+                    <button type="button" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+                        onclick="closeModal('createAlmacenModal')">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <form th:action="@{/almacenes/guardar}" th:object="${newAlmacen}" method="post">
+                    <div class="p-6 overflow-y-auto max-h-[70vh]">
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
+                                <input type="text" th:field="*{nombre}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    placeholder="Nombre del almacén" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Ubicación</label>
+                                <input type="text" th:field="*{ubicacion}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    placeholder="Ej: Tienda 1, Bodega Central">
+                            </div>
+
+                            <div class="flex items-center mt-2">
+                                <input type="checkbox" th:field="*{activo}"
+                                    class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                                    id="chkActivoCreate">
+                                <label class="ml-2 block text-sm font-medium text-gray-700"
+                                    for="chkActivoCreate">Activo</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 mt-0 p-4 border-t border-gray-200 bg-gray-50">
+                        <button type="button"
+                            class="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                            onclick="closeModal('createAlmacenModal')">
+                            Cancelar
                         </button>
-
-                        <!-- Botón Eliminar -->
-                        <a th:href="@{'/almacenes/eliminar/' + ${almacen.id}}"
-                            class="btn btn-sm btn-danger">Eliminar</a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Modal Guardar (nuevo) -->
-    <div class="modal fade" id="guardarModal" tabindex="-1" aria-labelledby="guardarModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form th:action="@{/almacenes/guardar}" th:object="${almacen}" method="post">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="guardarModalLabel">Nuevo Almacén</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" th:field="*{id}" />
-
-                        <div class="mb-3">
-                            <label class="form-label">Nombre</label>
-                            <input type="text" th:field="*{nombre}" class="form-control"
-                                placeholder="Nombre del almacén" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Ubicación</label>
-                            <input type="text" th:field="*{ubicacion}" class="form-control" placeholder="Ej: Tienda 1">
-                        </div>
-
-                        <div class="form-check mb-3">
-                            <input type="checkbox" th:field="*{activo}" class="form-check-input">
-                            <label class="form-check-label">Activo</label>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">Guardar</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit"
+                            class="px-6 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md">
+                            Guardar
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
 
-    <!-- Modal Editar (uno por cada almacén) -->
-    <div th:each="almacen : ${almacenes}">
-        <div class="modal fade" th:id="'editarModal__' + ${almacen.id}" tabindex="-1" aria-labelledby="editarModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form th:action="@{/almacenes/guardar}" method="post">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="editarModalLabel">Editar Almacén</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <!-- ID oculto -->
-                            <input type="hidden" name="id" th:value="${almacen.id}" />
+        <!-- MODALES EDITAR (uno por fila) - Tailwind/JS -->
+        <div th:each="a : ${almacenes}" th:id="'editAlmacenModal' + ${a.id}"
+            class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 hidden">
+            <div
+                class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 my-8 max-h-[90vh] overflow-hidden transform scale-100 transition-transform duration-300">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                    <h5 class="text-2xl font-bold text-gray-800">Editar Almacén</h5>
+                    <button type="button" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+                        th:onclick="|closeModal('editAlmacenModal${a.id}')|">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Nombre</label>
-                                <input type="text" name="nombre" th:value="${almacen.nombre}" class="form-control"
-                                    required>
+                <!-- NOTA: Usamos @RequestParam en el controller, por eso usamos name="" y no th:field -->
+                <form th:action="@{/almacenes/actualizar}" method="post">
+                    <div class="p-6 overflow-y-auto max-h-[70vh]">
+                        <div class="grid grid-cols-1 gap-4">
+
+                            <!-- ID oculto es CRUCIAL para la actualización -->
+                            <input type="hidden" name="id" th:value="${a.id}" />
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
+                                <input type="text" name="nombre" th:value="${a.nombre}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    placeholder="Nombre del almacén" required>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Ubicación</label>
-                                <input type="text" name="ubicacion" th:value="${almacen.ubicacion}"
-                                    class="form-control">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Ubicación</label>
+                                <input type="text" name="ubicacion" th:value="${a.ubicacion}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    placeholder="Ej: Tienda 1, Bodega Central">
                             </div>
 
-                            <div class="form-check mb-3">
-                                <input type="checkbox" name="activo" class="form-check-input"
-                                    th:checked="${almacen.activo}">
-                                <label class="form-check-label">Activo</label>
+                            <div class="flex items-center mt-2">
+                                <!-- Checkbox explícito + hidden para asegurar false cuando no está marcado -->
+                                <input type="checkbox" name="activo" value="true" th:checked="${a.activo}"
+                                    class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                                    th:id="'chkActivoEdit__' + ${a.id}">
+                                <label class="ml-2 block text-sm font-medium text-gray-700"
+                                    th:for="'chkActivoEdit__' + ${a.id}">Activo</label>
+
+                                <!-- Hidden input para asegurar que 'activo' sea false si el checkbox no se envía (no marcado) -->
+                                <input type="hidden" name="activo" value="false" />
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Actualizar</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        </div>
-                    </form>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 mt-0 p-4 border-t border-gray-200 bg-gray-50">
+                        <button type="button"
+                            class="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                            th:onclick="|closeModal('editAlmacenModal${a.id}')|">
+                            Cancelar
+                        </button>
+                        <button type="submit"
+                            class="px-6 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-md">
+                            Actualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL DE CONFIRMACIÓN REUTILIZABLE (para la eliminación) -->
+        <div id="deleteConfirmModal"
+            class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-[100] transition-opacity duration-300 hidden">
+            <div
+                class="bg-white rounded-xl shadow-2xl max-w-sm w-full mx-4 p-6 text-center transform scale-100 transition-transform duration-300">
+                <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
+                <h5 class="text-xl font-bold text-gray-800 mb-2">Confirmar Eliminación</h5>
+                <p class="text-gray-600 mb-6">¿Estás seguro de que deseas eliminar este almacén? Esta acción no se
+                    puede deshacer.</p>
+
+                <div class="flex justify-center space-x-4">
+                    <button type="button"
+                        class="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                        onclick="closeModal('deleteConfirmModal')">
+                        Cancelar
+                    </button>
+                    <a id="confirmDeleteButton" href="#"
+                        class="px-6 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md">
+                        Eliminar
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- FUNCIONES JS para modales -->
+        <script th:inline="javascript">
+            // Función para abrir modal (uso Tailwind `flex` para mostrar)
+            window.openModal = function (modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                }
+            }
+
+            // Función para cerrar modal (uso Tailwind `hidden` para ocultar)
+            window.closeModal = function (modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+            }
+
+            // Función para abrir el modal de confirmación de eliminación
+            window.openConfirmModal = function (url) {
+                const confirmModal = document.getElementById('deleteConfirmModal');
+                const confirmButton = document.getElementById('confirmDeleteButton');
+
+                if (confirmModal && confirmButton) {
+                    confirmButton.href = url; // Establece el destino de la eliminación
+                    openModal('deleteConfirmModal');
+                }
+            }
+        </script>
+    </div>
 </body>
 
 </html>

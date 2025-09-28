@@ -29,4 +29,9 @@ public class ProductoService {
     public void deleteById(Integer id) {
         repository.deleteById(id);
     }
+
+    // MANTÉN SOLO UNO DE ESTOS MÉTODOS:
+    public List<Producto> buscarPorNombreOCodigo(String term) {
+        return repository.searchByNombreOrCodigo(term);
+    }
 }

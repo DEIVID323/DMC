@@ -1,0 +1,172 @@
+:root {
+  --color-bg: #ffffff;
+  --color-primary: #0059ff;
+  --color-muted: #9fa4af;
+  --color-hover: #e8ecf4;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: url('fondo.jpg') no-repeat center center fixed;
+  background-size: cover;
+}
+
+main {
+  display: flex;
+}
+
+/* Sidebar contenedor */
+#Secmenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 80px;
+  background: var(--color-bg);
+  transition: width 0.4s ease;
+  z-index: 1000;
+  display: flex;
+}
+
+/* Sidebar expandido fijo con candado */
+#Secmenu.locked {
+  width: 300px;
+}
+
+/* Sidebar expandible por hover solo si no está bloqueado */
+#Secmenu:not(.locked):hover {
+  width: 300px;
+}
+
+/* Sidebar contenido */
+.sidebar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 0 18px 18px 0;
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+.sidebar button {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+  color: inherit;
+}
+
+.left, .right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.left {
+  z-index: 1;
+  left: 0;
+  width: 80px;
+  background: var(--color-bg);
+}
+
+.left img {
+  width: 40px;
+  margin: 24px 0 28px;
+}
+
+.left button {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+}
+
+.left button:hover {
+  background: var(--color-hover);
+}
+
+.left div:last-of-type {
+  margin-top: auto;
+  margin-bottom: 20px;
+}
+
+.right {
+  left: 76px;
+  height: 100%;
+  position: relative;
+}
+
+.right-inner {
+  position: absolute;
+  inset: 8px;
+  left: 4px;
+  border-radius: 12px;
+  background: var(--color-bg);
+  overflow-y: auto;
+}
+
+.right .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 16px;
+}
+
+.right h2 {
+  font-size: 16px;
+}
+
+.right nav {
+  padding: 0 12px;
+}
+
+.right button {
+  padding: 0 12px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 44px;
+  font-size: 14px;
+}
+
+.right button:hover {
+  background: var(--color-hover);
+}
+
+.right button i {
+  font-size: 18px;
+}
+
+/* Contenido principal */
+#Seccontenido {
+  margin-left: 80px;
+  padding: 20px;
+  flex-grow: 1;
+  transition: margin-left 0.4s ease;
+  position: relative;
+  z-index: 500;
+}
+
+/* Ajuste margen cuando sidebar está expandido fijo */
+#Secmenu.locked + #Seccontenido {
+  margin-left: 300px;
+}
+
+/* Ajuste margen cuando sidebar se expande por hover */
+#Secmenu:not(.locked):hover + #Seccontenido {
+  margin-left: 300px;
+}

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Punto de Venta</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div class="container mx-auto px-4 py-6 min-h-screen">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Panel Principal - POS -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100">
+                        <div class="p-6 border-b border-gray-200 bg-gray-50">
+                            <h2 class="text-2xl font-bold text-gray-800">
+                                <i class="fas fa-cash-register mr-3 text-red-500"></i>Punto de Venta
+                            </h2>
+                        </div>
+
+                        <div class="p-6">
+                            <!-- Búsqueda de productos -->
+                            <div class="mb-6">
+                                <label for="buscar_producto" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    Buscar Producto (Nombre o Código)
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400"></i>
+                                    </div>
+                                    <input type="text" id="buscar_producto"
+                                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                        placeholder="Escribe para buscar productos...">
+                                </div>
+                                <div id="resultados_busqueda"
+                                    class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto">
+                                </div>
+                            </div>
+
+                            <hr class="mb-6">
+
+                            <!-- Carrito de compras -->
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                                    <i class="fas fa-shopping-cart mr-2 text-red-500"></i>Carrito de Compras
+                                </h3>
+
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full table-auto border-collapse">
+                                        <thead class="bg-gray-800 text-white">
+                                            <tr>
+                                                <th
+                                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                                    Producto</th>
+                                                <th
+                                                    class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">
+                                                    Precio</th>
+                                                <th
+                                                    class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">
+                                                    Cantidad</th>
+                                                <th
+                                                    class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">
+                                                    Subtotal</th>
+                                                <th
+                                                    class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">
+                                                    Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="carrito_tbody" class="divide-y divide-gray-200">
+                                            <!-- Productos se cargan dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Mensaje cuando carrito está vacío -->
+                                <div id="carrito_vacio" class="text-center py-8 text-gray-500">
+                                    <i class="fas fa-shopping-cart text-4xl mb-3 text-gray-300"></i>
+                                    <p class="text-lg">El carrito está vacío</p>
+                                    <p class="text-sm">Busca productos para comenzar una venta</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel Lateral - Resumen -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100 sticky top-6">
+                        <div class="p-6 border-b border-gray-200 bg-gray-50">
+                            <h3 class="text-xl font-bold text-gray-800">Resumen de Venta</h3>
+                        </div>
+
+                        <div class="p-6">
+                            <!-- Selección de cliente -->
+                            <div class="mb-6">
+                                <label for="id_cliente"
+                                    class="block text-sm font-semibold text-gray-700 mb-2">Cliente</label>
+                                <select id="id_cliente"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <option value="">Venta genérica</option>
+                                    <option th:each="cliente : ${clientes}" th:value="${cliente.idCliente}"
+                                        th:text="${cliente.nombreCliente}">
+                                        Cliente
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Total -->
+                            <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                                <div class="flex justify-between items-center text-2xl font-bold">
+                                    <span class="text-gray-700">TOTAL:</span>
+                                    <span id="total_venta" class="text-red-600">$0.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Botón de historial -->
+                            <div class="mb-4">
+                                <a th:href="@{/historial}"
+                                    class="w-full bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:bg-blue-600 transition-colors inline-flex items-center justify-center">
+                                    <i class="fas fa-history mr-2"></i>Ver Historial
+                                </a>
+                            </div>
+
+                            <!-- Botón finalizar venta -->
+                            <div>
+                                <button id="btn_finalizar_venta"
+                                    class="w-full bg-red-600 text-white px-6 py-3 rounded-lg font-semibold shadow-xl hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                    onclick="openModal('pagoModal')" disabled>
+                                    <i class="fas fa-check mr-2"></i>Finalizar Venta
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL DE PAGO -->
+        <div id="pagoModal"
+            class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 hidden">
+            <div
+                class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 my-8 max-h-[90vh] overflow-hidden transform scale-100 transition-transform duration-300">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                    <h5 class="text-2xl font-bold text-gray-800">Procesar Pago</h5>
+                    <button type="button" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+                        onclick="closeModal('pagoModal')">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="p-6">
+                    <!-- Total a pagar -->
+                    <div class="text-center mb-6 p-4 bg-red-50 rounded-lg">
+                        <h3 class="text-2xl font-bold text-red-600">
+                            Total a Pagar: <span id="modal_total_pagar">$0.00</span>
+                        </h3>
+                    </div>
+
+                    <!-- Método de pago -->
+                    <div class="mb-4">
+                        <label for="metodo_pago" class="block text-sm font-semibold text-gray-700 mb-2">Método de
+                            Pago</label>
+                        <select id="metodo_pago"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <option value="efectivo">Efectivo</option>
+                            <option value="tarjeta_credito">Tarjeta de Crédito</option>
+                            <option value="tarjeta_debito">Tarjeta de Débito</option>
+                            <option value="transferencia">Transferencia</option>
+                        </select>
+                    </div>
+
+                    <!-- Panel para efectivo -->
+                    <div id="pago_efectivo_div">
+                        <div class="mb-4">
+                            <label for="monto_recibido" class="block text-sm font-semibold text-gray-700 mb-2">Monto
+                                Recibido</label>
+                            <input type="number" step="0.01" id="monto_recibido"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                placeholder="0.00">
+                        </div>
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <h4 class="text-xl font-bold text-green-700">
+                                Cambio: <span id="cambio_cliente">$0.00</span>
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 p-4 border-t border-gray-200 bg-gray-50">
+                    <button type="button"
+                        class="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                        onclick="closeModal('pagoModal')">
+                        Cancelar
+                    </button>
+                    <button type="button" id="btn_confirmar_venta"
+                        class="px-6 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md">
+                        Confirmar Venta
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- JAVASCRIPT -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function () {
+                const MONEDA = '$'; // Configurar según necesidades
+                let carrito = [];
+
+                // Elementos del DOM
+                const buscarInput = document.getElementById('buscar_producto');
+                const resultadosBusqueda = document.getElementById('resultados_busqueda');
+                const carritoTbody = document.getElementById('carrito_tbody');
+                const carritoVacio = document.getElementById('carrito_vacio');
+                const totalVentaSpan = document.getElementById('total_venta');
+                const btnFinalizarVenta = document.getElementById('btn_finalizar_venta');
+                const modalTotalPagar = document.getElementById('modal_total_pagar');
+                const montoRecibidoInput = document.getElementById('monto_recibido');
+                const cambioClienteSpan = document.getElementById('cambio_cliente');
+                const btnConfirmarVenta = document.getElementById('btn_confirmar_venta');
+                const metodoPagoSelect = document.getElementById('metodo_pago');
+                const pagoEfectivoDiv = document.getElementById('pago_efectivo_div');
+                const idClienteSelect = document.getElementById('id_cliente');
+
+                // Búsqueda de productos
+                let timeoutId;
+                buscarInput.addEventListener('input', function () {
+                    clearTimeout(timeoutId);
+                    const term = this.value.trim();
+
+                    if (term.length < 2) {
+                        resultadosBusqueda.classList.add('hidden');
+                        return;
+                    }
+
+                    timeoutId = setTimeout(() => {
+                        fetch(`/ventas/buscar?term=${encodeURIComponent(term)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                mostrarResultadosBusqueda(data);
+                            })
+                            .catch(error => {
+                                console.error('Error en búsqueda:', error);
+                            });
+                    }, 300);
+                });
+
+                function mostrarResultadosBusqueda(productos) {
+                    resultadosBusqueda.innerHTML = '';
+
+                    if (productos.length > 0) {
+                        productos.forEach(producto => {
+                            const item = document.createElement('div');
+                            item.className = 'px-4 py-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0';
+                            item.innerHTML = `
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-semibold text-gray-800">${producto.nombre}</div>
+                                    <div class="text-sm text-gray-600">Stock: ${producto.stock}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-bold text-red-600">${MONEDA}${parseFloat(producto.precioVenta).toFixed(2)}</div>
+                                </div>
+                            </div>
+                        `;
+                            item.addEventListener('click', () => {
+                                agregarAlCarrito(producto);
+                                buscarInput.value = '';
+                                resultadosBusqueda.classList.add('hidden');
+                            });
+                            resultadosBusqueda.appendChild(item);
+                        });
+                        resultadosBusqueda.classList.remove('hidden');
+                    } else {
+                        resultadosBusqueda.innerHTML = '<div class="px-4 py-3 text-gray-500 text-center">No se encontraron productos</div>';
+                        resultadosBusqueda.classList.remove('hidden');
+                    }
+                }
+
+                // Ocultar resultados al hacer clic fuera
+                document.addEventListener('click', function (e) {
+                    if (!buscarInput.contains(e.target) && !resultadosBusqueda.contains(e.target)) {
+                        resultadosBusqueda.classList.add('hidden');
+                    }
+                });
+
+                function agregarAlCarrito(producto) {
+                    const existente = carrito.find(item => item.id === producto.idProducto);
+                    if (existente) {
+                        existente.cantidad++;
+                    } else {
+                        carrito.push({
+                            id: producto.idProducto,
+                            nombre: producto.nombre,
+                            precio: parseFloat(producto.precioVenta),
+                            cantidad: 1
+                        });
+                    }
+                    renderizarCarrito();
+                }
+
+                function renderizarCarrito() {
+                    carritoTbody.innerHTML = '';
+                    let total = 0;
+
+                    if (carrito.length === 0) {
+                        carritoVacio.classList.remove('hidden');
+                        btnFinalizarVenta.disabled = true;
+                    } else {
+                        carritoVacio.classList.add('hidden');
+                        btnFinalizarVenta.disabled = false;
+
+                        carrito.forEach((item, index) => {
+                            const subtotal = item.precio * item.cantidad;
+                            total += subtotal;
+
+                            const tr = document.createElement('tr');
+                            tr.className = 'odd:bg-white even:bg-gray-50';
+                            tr.innerHTML = `
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900">${item.nombre}</td>
+                            <td class="px-4 py-3 text-sm text-center">${MONEDA}${item.precio.toFixed(2)}</td>
+                            <td class="px-4 py-3 text-center">
+                                <input type="number" value="${item.cantidad}" min="1" 
+                                    class="w-16 px-2 py-1 border border-gray-300 rounded text-center cantidad-input" 
+                                    data-index="${index}">
+                            </td>
+                            <td class="px-4 py-3 text-sm text-center font-semibold">${MONEDA}${subtotal.toFixed(2)}</td>
+                            <td class="px-4 py-3 text-center">
+                                <button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm eliminar-btn" 
+                                    data-index="${index}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                            carritoTbody.appendChild(tr);
+                        });
+                    }
+
+                    totalVentaSpan.textContent = `${MONEDA}${total.toFixed(2)}`;
+                }
+
+                // Eventos del carrito
+                carritoTbody.addEventListener('change', function (e) {
+                    if (e.target.classList.contains('cantidad-input')) {
+                        const index = e.target.dataset.index;
+                        const nuevaCantidad = parseInt(e.target.value);
+                        if (nuevaCantidad > 0) {
+                            carrito[index].cantidad = nuevaCantidad;
+                            renderizarCarrito();
+                        }
+                    }
+                });
+
+                carritoTbody.addEventListener('click', function (e) {
+                    const button = e.target.closest('.eliminar-btn');
+                    if (button) {
+                        const index = button.dataset.index;
+                        carrito.splice(index, 1);
+                        renderizarCarrito();
+                    }
+                });
+
+                // Modal de pago
+                btnFinalizarVenta.addEventListener('click', () => {
+                    const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+                    modalTotalPagar.textContent = `${MONEDA}${total.toFixed(2)}`;
+                    montoRecibidoInput.value = '';
+                    cambioClienteSpan.textContent = `${MONEDA}0.00`;
+                });
+
+                metodoPagoSelect.addEventListener('change', () => {
+                    pagoEfectivoDiv.style.display = metodoPagoSelect.value === 'efectivo' ? 'block' : 'none';
+                });
+
+                montoRecibidoInput.addEventListener('input', () => {
+                    const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+                    const recibido = parseFloat(montoRecibidoInput.value) || 0;
+                    const cambio = recibido - total;
+                    cambioClienteSpan.textContent = `${MONEDA}${cambio.toFixed(2)}`;
+                });
+
+                // Confirmar venta
+                btnConfirmarVenta.addEventListener('click', function () {
+                    if (carrito.length === 0) {
+                        alert('El carrito está vacío');
+                        return;
+                    }
+
+                    this.disabled = true;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
+
+                    const ventaData = {
+                        id_cliente: idClienteSelect.value,
+                        metodo_pago: metodoPagoSelect.value,
+                        carrito: carrito.map(item => ({ id: item.id, cantidad: item.cantidad }))
+                    };
+
+                    fetch('/ventas/guardar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(ventaData)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Limpiar carrito y cerrar modal
+                                carrito = [];
+                                renderizarCarrito();
+                                closeModal('pagoModal');
+
+                                // Mostrar mensaje de éxito
+                                alert('Venta realizada con éxito. ID: ' + data.id_venta);
+
+                                // Opcional: redirigir al ticket
+                                // window.open(`/ventas/ticket/${data.id_venta}`, '_blank');
+                            } else {
+                                alert('Error: ' + (data.error || 'Ocurrió un error desconocido.'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Hubo un error de conexión.');
+                        })
+                        .finally(() => {
+                            this.disabled = false;
+                            this.innerHTML = '<i class="fas fa-check mr-2"></i>Confirmar Venta';
+                        });
+                });
+
+                // Funciones de modal
+                window.openModal = function (modalId) {
+                    const modal = document.getElementById(modalId);
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                        document.body.classList.add('overflow-hidden');
+                    }
+                }
+
+                window.closeModal = function (modalId) {
+                    const modal = document.getElementById(modalId);
+                    if (modal) {
+                        modal.classList.remove('flex');
+                        modal.classList.add('hidden');
+                        document.body.classList.remove('overflow-hidden');
+                    }
+                }
+
+                // Inicializar
+                renderizarCarrito();
+            });
+        </script>
+    </div>
+</body>
+
+</html>

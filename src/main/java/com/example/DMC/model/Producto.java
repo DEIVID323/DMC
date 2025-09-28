@@ -69,4 +69,5 @@ public class Producto {
 
     @Column(name = "fecha_actualizacion", nullable = false)
     private LocalDateTime fechaActualizacion = LocalDateTime.now();
+    
 }

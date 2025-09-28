@@ -1,136 +1,257 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8">
     <title>Gestión de Categorías</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Asumimos que Tailwind CSS y Font Awesome son cargados en el layout principal -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
-    <div class="container mt-5">
-        <h1 class="mb-4 text-center">Gestión de Categorías</h1>
+    <div th:fragment="content">
+        <div class="container mx-auto px-4 py-6 min-h-screen">
+            <h1 class="text-3xl font-extrabold text-gray-800 mb-8 text-center border-b-2 pb-2 border-red-500">
+                Gestión de Inventario - Categorías
+            </h1>
 
-        <!-- Mensajes -->
-        <div th:if="${mensaje}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i><span th:text="${mensaje}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <!-- Alertas con estilo Tailwind -->
+            <div th:if="${mensaje}"
+                class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl relative mb-6 shadow-lg"
+                role="alert">
+                <strong class="font-bold mr-2">✔️ Éxito:</strong>
+                <span th:text="${mensaje}"></span>
+            </div>
+            <div th:if="${error}"
+                class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative mb-6 shadow-lg"
+                role="alert">
+                <strong class="font-bold mr-2">⚠️ Error:</strong>
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- Botón para abrir modal de crear -->
+            <div class="mb-6">
+                <button type="button" onclick="openModal('createCategoriaModal')"
+                    class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold shadow-xl hover:bg-red-700 transition-colors duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-red-300">
+                    <i class="fas fa-plus mr-2"></i>Nueva Categoría
+                </button>
+            </div>
+
+            <!-- Tabla con estilos Tailwind mejorados -->
+            <div class="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table-auto border-collapse">
+                        <thead class="bg-gray-800 text-white sticky top-0">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Nombre</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Activo
+                                </th>
+                                <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr th:each="c : ${categorias}"
+                                class="odd:bg-white even:bg-gray-50 hover:bg-red-50 transition-colors">
+                                <td class="px-4 py-3 text-sm" th:text="${c.idCategoria}">1</td>
+                                <td class="px-4 py-3 text-sm font-semibold text-gray-900" th:text="${c.nombre}">
+                                    Nombre</td>
+                                <td class="px-4 py-3 text-center text-sm">
+                                    <span th:if="${c.activo}"
+                                        class="inline-flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+                                        <i class="fas fa-check-circle mr-1"></i> Sí
+                                    </span>
+                                    <span th:unless="${c.activo}"
+                                        class="inline-flex items-center bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-medium">
+                                        <i class="fas fa-times-circle mr-1"></i> No
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    <div class="flex justify-center space-x-2">
+                                        <!-- Botón EDITAR -->
+                                        <button
+                                            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
+                                            th:onclick="|openModal('editCategoriaModal${c.idCategoria}')|">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <!-- Botón ELIMINAR (Usando modal de confirmación custom) -->
+                                        <button
+                                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
+                                            th:onclick="|openConfirmModal('@{/categorias/eliminar/{id}(id=${c.idCategoria})}')|">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle me-2"></i><span th:text="${error}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
 
-        <!-- Botón para abrir modal de crear -->
-        <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal"
-            data-bs-target="#createCategoriaModal">
-            Nueva Categoría
-        </button>
+        <!-- MODAL CREAR (Tailwind/JS) -->
+        <div id="createCategoriaModal"
+            class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 hidden">
+            <div
+                class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 my-8 max-h-[90vh] overflow-hidden transform scale-100 transition-transform duration-300">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                    <h5 class="text-2xl font-bold text-gray-800">Nueva Categoría</h5>
+                    <button type="button" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+                        onclick="closeModal('createCategoriaModal')">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
 
-        <!-- Tabla -->
-        <table class="table table-bordered table-hover align-middle">
-            <thead class="table-dark text-center">
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Activo</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="c : ${categorias}">
-                    <td th:text="${c.idCategoria}">1</td>
-                    <td th:text="${c.nombre}">Nombre</td>
-                    <td th:text="${c.activo ? 'Sí' : 'No'}">Sí</td>
-                    <td class="text-center">
-                        <!-- Editar -->
-                        <button class="btn btn-sm btn-warning"
-                            th:attr="data-bs-target='#editCategoriaModal__' + ${c.idCategoria}" data-bs-toggle="modal">
-                            Editar
-                        </button>
-                        <!-- Eliminar (igual que productos) -->
-                        <a th:href="@{/categorias/eliminar/{id}(id=${c.idCategoria})}" class="btn btn-sm btn-danger"
-                            onclick="return confirm('¿Seguro que deseas eliminar esta categoría?')">
-                            Eliminar
-                        </a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Modal CREAR -->
-    <div class="modal fade" id="createCategoriaModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
                 <form th:action="@{/categorias/guardar}" th:object="${newCategoria}" method="post">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Nueva Categoría</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="p-6 overflow-y-auto max-h-[70vh]">
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
+                                <input type="text" th:field="*{nombre}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    required>
+                            </div>
+
+                            <div class="flex items-center mt-2">
+                                <input type="checkbox" th:field="*{activo}"
+                                    class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                                    id="chkActivoCreate">
+                                <label class="ml-2 block text-sm font-medium text-gray-700"
+                                    for="chkActivoCreate">Activo</label>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="modal-body row g-3">
-                        <div class="col-12">
-                            <label class="form-label">Nombre</label>
-                            <input type="text" th:field="*{nombre}" class="form-control" required>
-                        </div>
-
-                        <div class="col-12 form-check">
-                            <!-- Con th:field, Thymeleaf ya maneja hidden para false -->
-                            <input type="checkbox" th:field="*{activo}" class="form-check-input" id="chkActivoCreate">
-                            <label class="form-check-label" for="chkActivoCreate">Activo</label>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    <div class="flex justify-end space-x-3 mt-0 p-4 border-t border-gray-200 bg-gray-50">
+                        <button type="button"
+                            class="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                            onclick="closeModal('createCategoriaModal')">
+                            Cancelar
+                        </button>
+                        <button type="submit"
+                            class="px-6 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md">
+                            Guardar
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
 
-    <!-- Modales EDITAR (uno por fila) -->
-    <div th:each="c : ${categorias}" class="modal fade" th:id="'editCategoriaModal__' + ${c.idCategoria}" tabindex="-1"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
+        <!-- MODALES EDITAR (uno por fila) - Tailwind/JS -->
+        <div th:each="c : ${categorias}" th:id="'editCategoriaModal' + ${c.idCategoria}"
+            class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 hidden">
+            <div
+                class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 my-8 max-h-[90vh] overflow-hidden transform scale-100 transition-transform duration-300">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                    <h5 class="text-2xl font-bold text-gray-800">Editar Categoría</h5>
+                    <button type="button" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+                        th:onclick="|closeModal('editCategoriaModal${c.idCategoria}')|">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- NOTA: Usamos @RequestParam en el controller, por eso usamos name="" y no th:field -->
                 <form th:action="@{/categorias/actualizar}" method="post">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Editar Categoría</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="p-6 overflow-y-auto max-h-[70vh]">
+                        <div class="grid grid-cols-1 gap-4">
+
+                            <!-- ID oculto es CRUCIAL para la actualización -->
+                            <input type="hidden" name="idCategoria" th:value="${c.idCategoria}" />
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
+                                <input type="text" name="nombre" th:value="${c.nombre}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    required>
+                            </div>
+
+                            <div class="flex items-center mt-2">
+                                <!-- Checkbox explícito + hidden para asegurar false cuando no está marcado -->
+                                <input type="checkbox" name="activo" value="true" th:checked="${c.activo}"
+                                    class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                                    th:id="'chkActivoEdit__' + ${c.idCategoria}">
+                                <label class="ml-2 block text-sm font-medium text-gray-700"
+                                    th:for="'chkActivoEdit__' + ${c.idCategoria}">Activo</label>
+
+                                <!-- Hidden input para asegurar que 'activo' sea false si el checkbox no se envía (no marcado) -->
+                                <input type="hidden" name="activo" value="false" />
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="modal-body row g-3">
-                        <input type="hidden" name="idCategoria" th:value="${c.idCategoria}" />
-
-                        <div class="col-12">
-                            <label class="form-label">Nombre</label>
-                            <input type="text" name="nombre" th:value="${c.nombre}" class="form-control" required>
-                        </div>
-
-                        <div class="col-12 form-check">
-                            <!-- Checkbox explícito + hidden para asegurar false cuando no está marcado -->
-                            <input type="checkbox" name="activo" value="true" th:checked="${c.activo}"
-                                class="form-check-input" th:id="'chkActivoEdit__' + ${c.idCategoria}">
-                            <label class="form-check-label" th:for="'chkActivoEdit__' + ${c.idCategoria}">Activo</label>
-
-                            <input type="hidden" name="activo" value="false" />
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success">Actualizar</button>
+                    <div class="flex justify-end space-x-3 mt-0 p-4 border-t border-gray-200 bg-gray-50">
+                        <button type="button"
+                            class="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                            th:onclick="|closeModal('editCategoriaModal${c.idCategoria}')|">
+                            Cancelar
+                        </button>
+                        <button type="submit"
+                            class="px-6 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-md">
+                            Actualizar
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- MODAL DE CONFIRMACIÓN REUTILIZABLE (para la eliminación) -->
+        <div id="deleteConfirmModal"
+            class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-[100] transition-opacity duration-300 hidden">
+            <div
+                class="bg-white rounded-xl shadow-2xl max-w-sm w-full mx-4 p-6 text-center transform scale-100 transition-transform duration-300">
+                <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
+                <h5 class="text-xl font-bold text-gray-800 mb-2">Confirmar Eliminación</h5>
+                <p class="text-gray-600 mb-6">¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se
+                    puede deshacer.</p>
+
+                <div class="flex justify-center space-x-4">
+                    <button type="button"
+                        class="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                        onclick="closeModal('deleteConfirmModal')">
+                        Cancelar
+                    </button>
+                    <a id="confirmDeleteButton" href="#"
+                        class="px-6 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md">
+                        Eliminar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- FUNCIONES JS para modales -->
+        <script th:inline="javascript">
+            // Función para abrir modal (uso Tailwind `flex` para mostrar)
+            window.openModal = function (modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                }
+            }
+
+            // Función para cerrar modal (uso Tailwind `hidden` para ocultar)
+            window.closeModal = function (modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+            }
+
+            // Función para abrir el modal de confirmación de eliminación
+            window.openConfirmModal = function (url) {
+                const confirmModal = document.getElementById('deleteConfirmModal');
+                const confirmButton = document.getElementById('confirmDeleteButton');
+
+                if (confirmModal && confirmButton) {
+                    confirmButton.href = url; // Establece el destino de la eliminación
+                    openModal('deleteConfirmModal');
+                }
+            }
+        </script>
+    </div>
 </body>
 
 </html>

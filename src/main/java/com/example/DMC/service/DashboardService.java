@@ -40,7 +40,7 @@ public class DashboardService {
         data.setUsuario(usuario);
 
         // Totales reales
-        data.setTotalVentas(ventaRepository.countByEstado(EstadoVenta.completada));
+        data.setTotalVentas(ventaRepository.countByEstado(EstadoVenta.COMPLETADA));
         data.setTotalCompras(compraRepository.countByEstado("recibida")); // 👈 si Compras usa String, déjalo así
         data.setTotalProductos(productoRepository.countByActivo(true));
         data.setTotalProductosBajos(productoRepository.countByStockLessThanAndActivoTrue(5)); // Stock mínimo default 5
@@ -60,7 +60,7 @@ public class DashboardService {
             dataVentas.add((int) ventaRepository.countByFechaVentaBetweenAndEstado(
                     start,
                     end,
-                    EstadoVenta.completada));
+                    EstadoVenta.COMPLETADA));
         }
 
         data.setLabelsVentas(labelsVentas);

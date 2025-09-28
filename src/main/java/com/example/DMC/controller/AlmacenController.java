@@ -1,66 +1,77 @@
 package com.example.DMC.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.DMC.model.Almacen;
 import com.example.DMC.repository.AlmacenRepository;
-import com.example.DMC.service.AlmacenService;
 
-import java.util.List;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Controller
 @RequestMapping("/almacenes")
 public class AlmacenController {
 
-    private final AlmacenRepository almacenRepository;
-
-    public AlmacenController(AlmacenRepository almacenRepository) {
-        this.almacenRepository = almacenRepository;
-    }
+    @Autowired
+    private AlmacenRepository almacenRepository;
 
     // Listar almacenes
     @GetMapping
     public String listarAlmacenes(Model model) {
         List<Almacen> almacenes = almacenRepository.findAll();
         model.addAttribute("almacenes", almacenes);
-        model.addAttribute("almacen", new Almacen()); // objeto vacío para modal de crear
-        return "Almacenes/almacen";
+        model.addAttribute("newAlmacen", new Almacen()); // para el modal de crear
+
+        // Configuración para el layout (IGUAL QUE CATEGORIAS)
+        model.addAttribute("view", "Almacenes/almacen"); // Apunta al fragmento 'almacen.html'
+        model.addAttribute("activePage", "almacenes");
+
+        return "layout"; // Retorna el layout principal que cargará el fragmento "almacen"
     }
 
-    // Guardar o actualizar (unificado)
+    // Guardar almacén (crear)
     @PostMapping("/guardar")
-    public String guardarAlmacen(@ModelAttribute("almacen") Almacen almacen) {
+    public String guardarAlmacen(@ModelAttribute("newAlmacen") Almacen almacen,
+            @RequestParam(value = "activo", defaultValue = "false") boolean activo,
+            RedirectAttributes ra) {
+
+        almacen.setActivo(activo);
         almacenRepository.save(almacen);
-        // si id == null → crea
-        // si id != null → actualiza
+        ra.addFlashAttribute("mensaje", "Almacén creado correctamente.");
         return "redirect:/almacenes";
     }
 
-    // Buscar por ID (para el modal de editar)
-    @GetMapping("/editar/{id}")
-    @ResponseBody
-    public Almacen editarAlmacen(@PathVariable Integer id) {
-        return almacenRepository.findById(id).orElse(null);
+    // Actualizar almacén
+    @PostMapping("/actualizar")
+    public String actualizarAlmacen(@RequestParam("id") Integer id,
+            @RequestParam("nombre") String nombre,
+            @RequestParam("ubicacion") String ubicacion,
+            @RequestParam(value = "activo", defaultValue = "false") boolean activo,
+            RedirectAttributes ra) {
+
+        Almacen almacen = almacenRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Almacén no encontrado: " + id));
+
+        almacen.setNombre(nombre);
+        almacen.setUbicacion(ubicacion);
+        almacen.setActivo(activo);
+
+        almacenRepository.save(almacen);
+        ra.addFlashAttribute("mensaje", "Almacén actualizado correctamente.");
+        return "redirect:/almacenes";
     }
 
-    // Eliminar
+    // Eliminar almacén
     @GetMapping("/eliminar/{id}")
-    public String eliminarAlmacen(@PathVariable Integer id) {
+    public String eliminarAlmacen(@PathVariable Integer id, RedirectAttributes ra) {
         almacenRepository.deleteById(id);
+        ra.addFlashAttribute("mensaje", "Almacén eliminado.");
         return "redirect:/almacenes";
     }
 }
-
 /* 
     @GetMapping
     @PreAuthorize("hasRole('admin')") // Basado en permisos como 'almacenes_gestionar'

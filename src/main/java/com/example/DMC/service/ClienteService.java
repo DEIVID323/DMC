@@ -18,6 +18,16 @@ public class ClienteService {
         return repository.findAll();
     }
 
+    // Método para encontrar solo clientes activos
+    public List<Cliente> findByActivoTrue() {
+        return repository.findByActivoTrue();
+    }
+
+    // Método para encontrar solo clientes inactivos
+    public List<Cliente> findByActivoFalse() {
+        return repository.findByActivoFalse();
+    }
+
     public Optional<Cliente> findById(Integer id) {
         return repository.findById(id);
     }
