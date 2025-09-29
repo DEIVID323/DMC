@@ -59,8 +59,15 @@ public class CompraController {
             RedirectAttributes ra) {
 
         try {
-            // Obtener usuario actual
-            String username = authentication.getName();
+            // Obtener usuario actual o usar uno por defecto
+            String username;
+            if (authentication != null && authentication.getName() != null) {
+                username = authentication.getName();
+            } else {
+                // Usuario por defecto si no hay autenticación
+                username = "admin"; // O el username que tengas en tu BD
+            }
+
             var usuario = usuarioService.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -79,11 +86,11 @@ public class CompraController {
             return "redirect:/compras";
 
         } catch (Exception e) {
+            e.printStackTrace();
             ra.addFlashAttribute("error", "Error al crear la orden: " + e.getMessage());
             return "redirect:/compras";
         }
     }
-
     // Marcar compra como recibida
     @GetMapping("/recibir/{id}")
     public String recibirCompra(@PathVariable Integer id, RedirectAttributes ra) {

@@ -1,0 +1,41 @@
+<div th:fragment="content" class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-extrabold"><i class="fas fa-boxes mr-2"></i>Reporte de Inventario</h1>
+        <a th:href="@{/reportes}" class="px-4 py-2 border rounded-lg">Volver</a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6 mt-4 text-center">
+        <h3 class="text-xl">Valor Total del Inventario (costo):
+            <span class="text-green-600 font-bold"
+                th:text="${'$' + #numbers.formatDecimal(valorTotal,1,2)}">$0.00</span>
+        </h3>
+    </div>
+
+    <div class="bg-white rounded-xl shadow mt-6 overflow-x-auto">
+        <table class="min-w-full table-auto">
+            <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="px-4 py-3 text-left">Producto</th>
+                    <th class="px-4 py-3 text-right">Stock</th>
+                    <th class="px-4 py-3 text-right">Stock Mín.</th>
+                    <th class="px-4 py-3 text-right">Precio Costo</th>
+                    <th class="px-4 py-3 text-right">Precio Venta</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                <tr th:each="f : ${filas}" th:classappend="${f.bajoStock()} ? 'bg-red-50' : ''">
+                    <td class="px-4 py-3" th:text="${f.nombre()}">Producto</td>
+                    <td class="px-4 py-3 text-right" th:text="${f.stock()}">0</td>
+                    <td class="px-4 py-3 text-right" th:text="${f.stockMinimo()}">0</td>
+                    <td class="px-4 py-3 text-right" th:text="${'$' + #numbers.formatDecimal(f.precioCompra(),1,2)}">
+                        $0.00</td>
+                    <td class="px-4 py-3 text-right" th:text="${'$' + #numbers.formatDecimal(f.precioVenta(),1,2)}">
+                        $0.00</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(filas)}">
+                    <td colspan="5" class="px-4 py-6 text-center text-gray-500">No hay productos.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

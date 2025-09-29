@@ -1,0 +1,42 @@
+<div th:fragment="content" class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-extrabold text-red-600"><i class="fas fa-exclamation-triangle mr-2"></i>Productos con Bajo Stock</h1>
+        <a th:href="@{/reportes}" class="px-4 py-2 border rounded-lg">Volver</a>
+    </div>
+
+    <div class="bg-red-50 border border-red-200 rounded-xl p-6 mt-4">
+        <p class="text-red-800">
+            <i class="fas fa-info-circle mr-2"></i>
+            Este reporte muestra los productos que tienen stock por debajo del mínimo establecido.
+        </p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow mt-6 overflow-x-auto">
+        <table class="min-w-full table-auto">
+            <thead class="bg-red-600 text-white">
+                <tr>
+                    <th class="px-4 py-3 text-left">Producto</th>
+                    <th class="px-4 py-3 text-right">Stock Actual</th>
+                    <th class="px-4 py-3 text-right">Stock Mínimo</th>
+                    <th class="px-4 py-3 text-right">Diferencia</th>
+                    <th class="px-4 py-3 text-right">Precio Venta</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                <tr th:each="f : ${filas}" class="bg-red-50">
+                    <td class="px-4 py-3 font-medium" th:text="${f.nombre()}">Producto</td>
+                    <td class="px-4 py-3 text-right text-red-600 font-bold" th:text="${f.stock()}">0</td>
+                    <td class="px-4 py-3 text-right" th:text="${f.stockMinimo()}">0</td>
+                    <td class="px-4 py-3 text-right text-red-800 font-bold" th:text="${f.stockMinimo() - f.stock()}">0</td>
+                    <td class="px-4 py-3 text-right" th:text="${'$' + #numbers.formatDecimal(f.precioVenta(),1,2)}">$0.00</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(filas)}">
+                    <td colspan="5" class="px-4 py-6 text-center text-green-600">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        ¡Excelente! Todos los productos tienen stock suficiente.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

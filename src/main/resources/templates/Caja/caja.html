@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Arqueo de Caja</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Tailwind + Font Awesome se asumen cargados en layout -->
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div class="container mx-auto px-4 py-6 min-h-screen">
+            <h1 class="text-3xl font-extrabold text-gray-800 mb-8 text-center border-b-2 pb-2 border-green-500">
+                <i class="fas fa-calculator mr-2"></i>Arqueo de Caja
+            </h1>
+
+            <!-- Alertas -->
+            <div th:if="${mensaje}"
+                class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl relative mb-6 shadow-lg"
+                role="alert">
+                <strong class="font-bold mr-2">✔️ Éxito:</strong>
+                <span th:text="${mensaje}"></span>
+            </div>
+            <div th:if="${error}"
+                class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative mb-6 shadow-lg"
+                role="alert">
+                <strong class="font-bold mr-2">⚠️ Error:</strong>
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- SIN TURNO ABIERTO -->
+            <div th:if="${turnoAbierto == null}">
+                <div class="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100 max-w-2xl mx-auto">
+                    <div class="p-6 border-b bg-gray-50 flex items-center justify-between">
+                        <h4 class="text-2xl font-bold text-gray-800">Iniciar Turno</h4>
+                        <button type="button" onclick="openModal('modalAbrirCaja')"
+                            class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold shadow-xl hover:bg-green-700 transition-colors">
+                            <i class="fas fa-play-circle mr-2"></i>Abrir Caja
+                        </button>
+                    </div>
+                    <div class="p-6 text-gray-600">
+                        No tienes un turno de caja activo. Presiona <span class="font-semibold">Abrir Caja</span> e
+                        ingresa el fondo inicial.
+                    </div>
+                </div>
+            </div>
+
+            <!-- TURNO ABIERTO -->
+            <div th:if="${turnoAbierto != null}" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Tarjeta Turno Activo -->
+                <div class="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100">
+                    <div class="p-6 border-b bg-green-50 flex items-center justify-between">
+                        <h4 class="text-2xl font-bold text-green-800">Turno Activo</h4>
+                        <button type="button" onclick="openModal('modalCerrarCaja')"
+                            class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold shadow-md hover:bg-red-700 transition-colors">
+                            <i class="fas fa-stop-circle mr-2"></i>Cerrar Caja
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-3 mb-6">
+                            <div>
+                                <p class="text-sm text-gray-600">Cajero:</p>
+                                <p class="font-semibold text-gray-900" th:text="${usuario.username}">Usuario</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Fecha de Apertura:</p>
+                                <p class="font-semibold"
+                                    th:text="${#temporals.format(turnoAbierto.fechaApertura, 'dd/MM/yyyy HH:mm:ss')}">
+                                    Fecha</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Monto Inicial:</p>
+                                <p class="font-semibold text-green-600"
+                                    th:text="${'$' + #numbers.formatDecimal(turnoAbierto.montoInicial, 1, 2)}">$0.00</p>
+                            </div>
+                        </div>
+
+                        <hr class="my-6">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <a th:href="@{/caja/historial}"
+                                class="text-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-history mr-2"></i>Ver Historial
+                            </a>
+                            <a th:href="@{caja/movimientos}"
+                                class="text-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-receipt mr-2"></i>Movimientos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta Resumen del Turno -->
+                <div class="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100">
+                    <div class="p-6 border-b bg-gray-50">
+                        <h4 class="text-2xl font-bold text-gray-800">Resumen del Turno</h4>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 text-sm">Estadísticas del turno actual:</p>
+                        <ul class="mt-4 space-y-3 text-sm">
+                            <li class="flex justify-between">
+                                <span>Total Ventas:</span>
+                                <span class="font-semibold"
+                                    th:text="${totalVentas != null ? '$' + #numbers.formatDecimal(totalVentas, 1, 2) : '$0.00'}">$0.00</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span>Total Gastos:</span>
+                                <span class="font-semibold"
+                                    th:text="${totalGastos != null ? '$' + #numbers.formatDecimal(totalGastos, 1, 2) : '$0.00'}">$0.00</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span>Ingresos Netos (Ventas - Gastos):</span>
+                                <span class="font-semibold"
+                                    th:text="${ingresosNetos != null ? '$' + #numbers.formatDecimal(ingresosNetos, 1, 2) : '$0.00'}">$0.00</span>
+                            </li>
+                            <li class="flex justify-between border-t pt-3">
+                                <span class="font-bold">Monto Esperado:</span>
+                                <span class="font-bold text-green-600"
+                                    th:text="${montoEsperado != null ? '$' + #numbers.formatDecimal(montoEsperado, 1, 2) : ('$' + #numbers.formatDecimal(turnoAbierto.montoInicial, 1, 2))}">$0.00</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Abrir Caja -->
+        <div id="modalAbrirCaja"
+            class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 hidden">
+            <div
+                class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 my-8 overflow-hidden transform scale-100 transition-transform duration-300">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                    <h5 class="text-2xl font-bold text-gray-800">Abrir Caja</h5>
+                    <button type="button" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+                        onclick="closeModal('modalAbrirCaja')">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <form th:action="@{/caja/abrir}" method="post" class="p-6 space-y-4">
+                    <!-- CSRF guardado: solo se pinta si existe -->
+                    <th:block th:with="csrf=${#request.getAttribute('_csrf')}" th:if="${csrf != null}">
+                        <input type="hidden" th:name="${csrf.parameterName}" th:value="${csrf.token}" />
+                    </th:block>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Monto Inicial (Fondo de
+                            caja)</label>
+                        <div class="flex items-center">
+                            <span
+                                class="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 rounded-l-lg">$</span>
+                            <input type="number" step="0.01" name="montoInicial"
+                                class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 mt-2 pt-4 border-t border-gray-200">
+                        <button type="button"
+                            class="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                            onclick="closeModal('modalAbrirCaja')">Cancelar</button>
+                        <button type="submit"
+                            class="px-6 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-md">
+                            Abrir Caja
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL: Cerrar Caja -->
+        <div id="modalCerrarCaja"
+            class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-[60] transition-opacity duration-300 hidden">
+            <div
+                class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 my-8 overflow-hidden transform scale-100 transition-transform duration-300">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                    <h5 class="text-2xl font-bold text-gray-800">Cerrar Caja</h5>
+                    <button type="button" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+                        onclick="closeModal('modalCerrarCaja')">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <form th:action="@{/caja/cerrar}" method="post" class="p-6 space-y-4">
+                    <th:block th:with="csrf=${#request.getAttribute('_csrf')}" th:if="${csrf != null}">
+                        <input type="hidden" th:name="${csrf.parameterName}" th:value="${csrf.token}" />
+                    </th:block>
+
+                    <input type="hidden" name="idTurno" th:value="${turnoAbierto != null ? turnoAbierto.idTurno : 0}">
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Monto Final Contado</label>
+                        <div class="flex items-center">
+                            <span
+                                class="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 rounded-l-lg">$</span>
+                            <input type="number" step="0.01" name="montoFinalReal"
+                                class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                required>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500">Se calculará la diferencia con el monto esperado del
+                            sistema.</p>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 mt-2 pt-4 border-t border-gray-200">
+                        <button type="button"
+                            class="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                            onclick="closeModal('modalCerrarCaja')">Cancelar</button>
+                        <button type="submit"
+                            class="px-6 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md">
+                            Confirmar Cierre
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- JS modales (igual que Categorías) -->
+        <script th:inline="javascript">
+            window.openModal = function (modalId) {
+                const el = document.getElementById(modalId);
+                if (!el) return;
+                el.classList.remove('hidden');
+                el.classList.add('flex');
+                document.body.classList.add('overflow-hidden');
+            }
+            window.closeModal = function (modalId) {
+                const el = document.getElementById(modalId);
+                if (!el) return;
+                el.classList.remove('flex');
+                el.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        </script>
+    </div>
+</body>
+
+</html>

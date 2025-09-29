@@ -31,7 +31,5 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
                OR LOWER(p.codigoBarra) LIKE LOWER(CONCAT('%', :q, '%'))
             """)
     List<Producto> searchByNombreOrCodigo(@Param("q") String q);
-    
-
 
 }
