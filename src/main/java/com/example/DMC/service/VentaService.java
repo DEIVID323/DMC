@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.DMC.enums.EstadoVenta;
 import com.example.DMC.model.Venta;
 import com.example.DMC.repository.VentaRepository;
 
@@ -16,6 +17,14 @@ public class VentaService {
 
     public List<Venta> findAll() {
         return repository.findAll();
+    }
+
+    public List<Venta> findAllOrderByFechaDesc() {
+        return repository.findAllOrderByFechaDesc();
+    }
+
+    public List<Venta> findByEstado(EstadoVenta estado) {
+        return repository.findByEstadoOrderByFechaVentaDesc(estado);
     }
 
     public Optional<Venta> findById(Integer id) {
@@ -29,5 +38,5 @@ public class VentaService {
     public void deleteById(Integer id) {
         repository.deleteById(id);
     }
-    
+
 }

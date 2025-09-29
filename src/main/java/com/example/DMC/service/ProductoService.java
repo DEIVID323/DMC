@@ -34,4 +34,11 @@ public class ProductoService {
     public List<Producto> buscarPorNombreOCodigo(String term) {
         return repository.searchByNombreOrCodigo(term);
     }
+    public List<Producto> findByActivoTrue() {
+        return repository.findByActivoTrue();
+
+    }
+    
+
+    
 }

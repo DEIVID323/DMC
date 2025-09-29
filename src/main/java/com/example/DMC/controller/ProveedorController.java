@@ -1,60 +1,141 @@
 package com.example.DMC.controller;
 
+import com.example.DMC.model.Proveedor;
+import com.example.DMC.service.ProveedorService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import java.util.List;
 
-import com.example.DMC.model.Proveedor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-
-import com.example.DMC.service.ProveedorService;
-
-@RestController
-@RequestMapping("/api/proveedores")
+@Controller
+@RequestMapping("/proveedores")
 public class ProveedorController {
+
     @Autowired
     private ProveedorService service;
 
+    // Listar proveedores activos
     @GetMapping
-    @PreAuthorize("hasRole('admin')")
-    public List<Proveedor> getAll() {
-        return service.findAll();
+    public String listarProveedoresActivos(Model model) {
+        List<Proveedor> proveedores = service.findByActivoTrue();
+        model.addAttribute("proveedores", proveedores);
+        model.addAttribute("newProveedor", new Proveedor()); // para el modal de crear
+        model.addAttribute("viendoInactivos", false);
+
+        // Configuración para el layout
+        model.addAttribute("view", "proveedor");
+        model.addAttribute("activePage", "proveedores");
+
+        return "layout";
     }
 
-    @GetMapping("/{id}")
-    @PreAuthorize("hasRole('admin')")
-    public ResponseEntity<Proveedor> getById(@PathVariable Integer id) {
-        return service.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    // Listar proveedores inactivos
+    @GetMapping("/inactivos")
+    public String listarProveedoresInactivos(Model model) {
+        List<Proveedor> proveedores = service.findByActivoFalse();
+        model.addAttribute("proveedores", proveedores);
+        model.addAttribute("newProveedor", new Proveedor());
+        model.addAttribute("viendoInactivos", true);
+
+        // Configuración para el layout
+        model.addAttribute("view", "proveedor");
+        model.addAttribute("activePage", "proveedores");
+
+        return "layout";
     }
 
-    @PostMapping
-    @PreAuthorize("hasRole('admin')")
-    public Proveedor create(@RequestBody Proveedor entity) {
-        return service.save(entity);
+    // Guardar proveedor (crear)
+    @PostMapping("/guardar")
+    public String guardarProveedor(@ModelAttribute("newProveedor") Proveedor proveedor,
+            @RequestParam(value = "activo", defaultValue = "true") boolean activo,
+            RedirectAttributes ra) {
+
+        // Establecer activo por defecto si no se especifica
+        proveedor.setActivo(activo);
+
+        try {
+            service.save(proveedor);
+            ra.addFlashAttribute("mensaje", "Proveedor guardado correctamente.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Error al guardar el proveedor: " + e.getMessage());
+        }
+
+        return "redirect:/proveedores";
     }
 
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('admin')")
-    public ResponseEntity<Proveedor> update(@PathVariable Integer id, @RequestBody Proveedor entity) {
-        return service.findById(id).map(existing -> {
-            entity.setIdProveedor(id);
-            return ResponseEntity.ok(service.save(entity));
-        }).orElse(ResponseEntity.notFound().build());
+    // Actualizar proveedor
+    @PostMapping("/actualizar")
+    public String actualizarProveedor(@RequestParam("idProveedor") Integer idProveedor,
+            @RequestParam("nombreProveedor") String nombreProveedor,
+            @RequestParam(value = "ruc", required = false) String ruc,
+            @RequestParam(value = "telefono", required = false) String telefono,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "direccion", required = false) String direccion,
+            @RequestParam(value = "activo", defaultValue = "false") boolean activo,
+            RedirectAttributes ra) {
+
+        try {
+            Proveedor proveedor = service.findById(idProveedor)
+                    .orElseThrow(() -> new IllegalArgumentException("Proveedor no encontrado: " + idProveedor));
+
+            proveedor.setNombreProveedor(nombreProveedor);
+            proveedor.setRuc(ruc);
+            proveedor.setTelefono(telefono);
+            proveedor.setEmail(email);
+            proveedor.setDireccion(direccion);
+            proveedor.setActivo(activo);
+
+            service.save(proveedor);
+            ra.addFlashAttribute("mensaje", "Proveedor actualizado correctamente.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Error al actualizar el proveedor: " + e.getMessage());
+        }
+
+        return "redirect:/proveedores";
     }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('admin')")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        service.deleteById(id);
-        return ResponseEntity.noContent().build();
+    // Cambiar estado del proveedor (activar/desactivar)
+    @GetMapping("/cambiarEstado/{id}/{estado}")
+    public String cambiarEstado(@PathVariable Integer id,
+            @PathVariable Integer estado,
+            RedirectAttributes ra) {
+        try {
+            Proveedor proveedor = service.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Proveedor no encontrado: " + id));
+
+            boolean nuevoEstado = estado == 1;
+            proveedor.setActivo(nuevoEstado);
+            service.save(proveedor);
+
+            String mensaje = nuevoEstado ? "Proveedor activado correctamente." : "Proveedor desactivado correctamente.";
+            ra.addFlashAttribute("mensaje", mensaje);
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Error al cambiar el estado: " + e.getMessage());
+        }
+
+        return "redirect:/proveedores";
+    }
+
+    // Eliminar proveedor
+    @GetMapping("/eliminar/{id}")
+    public String eliminarProveedor(@PathVariable Integer id, RedirectAttributes ra) {
+        try {
+            service.deleteById(id);
+            ra.addFlashAttribute("mensaje", "Proveedor eliminado correctamente.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Error al eliminar el proveedor: " + e.getMessage());
+        }
+        return "redirect:/proveedores";
+    }
+
+    // Endpoint para obtener datos del proveedor (para el modal de edición - AJAX)
+    @GetMapping("/datos/{id}")
+    @ResponseBody
+    public Proveedor obtenerDatosProveedor(@PathVariable Integer id) {
+        return service.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Proveedor no encontrado: " + id));
     }
 }

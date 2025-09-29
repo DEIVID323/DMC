@@ -28,5 +28,6 @@ public class DetalleCompraService {
 
     public void deleteById(Integer id) {
         repository.deleteById(id);
+        
     }
 }

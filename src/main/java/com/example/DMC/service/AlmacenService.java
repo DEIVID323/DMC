@@ -29,4 +29,7 @@ public class AlmacenService {
     public void deleteById(Integer id) {
         repository.deleteById(id);
     }
+    public List<Almacen> findByActivoTrue() {
+        return repository.findByActivoTrue();
+    }
 }

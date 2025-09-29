@@ -7,10 +7,12 @@ import org.springframework.data.repository.query.Param;
 import com.example.DMC.model.Producto;
 
 public interface ProductoRepository extends JpaRepository<Producto, Integer> {
+        List<Producto> findByActivoTrue();
 
     long countByActivo(boolean activo);
 
     long countByStockLessThanAndActivoTrue(int stock);
+
 
     // ✅ Método corregido que usa el nombre real de la propiedad
     List<Producto> findByNombreContainingIgnoreCaseOrCodigoBarraContainingIgnoreCase(
@@ -29,4 +31,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
                OR LOWER(p.codigoBarra) LIKE LOWER(CONCAT('%', :q, '%'))
             """)
     List<Producto> searchByNombreOrCodigo(@Param("q") String q);
+    
+
+
 }
