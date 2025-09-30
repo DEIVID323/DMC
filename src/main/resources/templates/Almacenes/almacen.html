@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
     <title>Gestión de Almacenes</title>
@@ -29,7 +30,7 @@
             </div>
 
             <!-- Botón para abrir modal de crear -->
-            <div class="mb-6">
+            <div class="mb-6" sec:authorize="hasRole('ADMIN')">
                 <button type="button" onclick="openModal('createAlmacenModal')"
                     class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold shadow-xl hover:bg-red-700 transition-colors duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-red-300">
                     <i class="fas fa-plus mr-2"></i>Nuevo Almacén
@@ -48,7 +49,7 @@
                                 </th>
                                 <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Activo
                                 </th>
-                                <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Acciones
+                                <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider" sec:authorize="hasRole('ADMIN')">Acciones
                                 </th>
                             </tr>
                         </thead>
@@ -70,7 +71,7 @@
                                         <i class="fas fa-times-circle mr-1"></i> No
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-sm">
+                                <td class="px-4 py-3 text-sm" sec:authorize="hasRole('ADMIN')">
                                     <div class="flex justify-center space-x-2">
                                         <!-- Botón EDITAR -->
                                         <button

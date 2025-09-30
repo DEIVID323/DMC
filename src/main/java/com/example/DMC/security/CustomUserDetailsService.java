@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
-
         private final UsuarioRepository usuarioRepo;
         private final PermisoRepository permisoRepo;
 
@@ -25,7 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 Usuario u = usuarioRepo.findByUsernameAndActivoTrue(username)
                                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-                String role = "ROLE_" + u.getRol().getNombreRol().toUpperCase();
+                String role = "ROLE_" + u.getRol().getNombreRol().toUpperCase(); // admin -> ROLE_ADMIN
 
                 List<String> permisos = permisoRepo.findPermisosByUsername(username);
 
@@ -39,7 +38,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
                 return new org.springframework.security.core.userdetails.User(
                                 u.getUsername(),
-                                u.getPassword(),
+                                u.getPassword(), // en BCrypt!
                                 Boolean.TRUE.equals(u.getActivo()), // habilitado
                                 true, true, true,
                                 auths);

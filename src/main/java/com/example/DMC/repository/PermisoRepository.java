@@ -12,7 +12,6 @@ public interface PermisoRepository extends JpaRepository<Permiso, Integer> {
     
     Permiso findByNombrePermiso(String nombrePermiso);
    
-    // Devuelve los nombres de permiso del ROL del usuario
     @Query(value = """
             SELECT p.nombre_permiso
             FROM usuarios u

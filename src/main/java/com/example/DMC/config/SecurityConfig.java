@@ -30,15 +30,15 @@ public class SecurityConfig {
 
         @Bean
         public AuthenticationProvider authenticationProvider(PasswordEncoder encoder) {
-                DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-                provider.setUserDetailsService(uds);
-                provider.setPasswordEncoder(encoder);
-                return provider;
+                DaoAuthenticationProvider p = new DaoAuthenticationProvider();
+                p.setUserDetailsService(uds);
+                p.setPasswordEncoder(encoder);
+                return p;
         }
 
         @Bean
-        public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-                return config.getAuthenticationManager();
+        public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
+                return cfg.getAuthenticationManager();
         }
 
         @Bean
@@ -47,39 +47,47 @@ public class SecurityConfig {
                                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                                 .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                                 .authorizeHttpRequests(reg -> reg
-                                                .requestMatchers("/", "/login", "/css/**", "/js/**", "/img/**")
+                                                .requestMatchers("/", "/login", "/css/**", "/js/**", "/img/**",
+                                                                "/favicon.ico", "/.well-known/**")
                                                 .permitAll()
-                                                .requestMatchers("/Ventas/**", "/Caja/**").hasAnyRole("ADMIN", "CAJERO")
-                                                .requestMatchers("/Productos/**", "/Almacenes/**", "/inventario/**",
-                                                                "/almacen/**")
-                                                .hasAnyRole("ADMIN", "ALMACENISTA")
-                                                /* .requestMatchers("/usuarios/**", "/admin/**").hasRole("ADMIN") */
+
+                                                // 👇 Rutas base + /** (si no, /ventas DA 403)
+                                                .requestMatchers("/ventas", "/ventas/**", "/caja", "/caja/**")
+                                                .hasAnyRole("ADMINISTRADOR", "CAJERO")
+
+                                                .requestMatchers("/almacenes", "/almacenes/**")
+                                                .hasAnyRole("ADMINISTRADOR", "ALMACENISTA")
+
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
                                                 .loginPage("/login")
-                                                // Redirección SIN crear otro archivo: handler inline por rol
                                                 .successHandler((req, res, auth) -> {
                                                         var a = auth.getAuthorities();
-                                                        String target = a.stream().anyMatch(
-                                                                        x -> x.getAuthority().equals("ROLE_ADMIN"))
-                                                                                        ? "/admin/dashboard"
+                                                        String target = a.stream().anyMatch(x -> x.getAuthority()
+                                                                        .equals("ROLE_ADMINISTRADOR"))
+                                                                                        ? "/dashboard"
                                                                                         : a.stream().anyMatch(x -> x
                                                                                                         .getAuthority()
                                                                                                         .equals("ROLE_CAJERO"))
-                                                                                                                        ? "/Ventas/dashboard"
+                                                                                                                        ? "/ventas"
                                                                                                                         : a.stream().anyMatch(
                                                                                                                                         x -> x.getAuthority()
                                                                                                                                                         .equals("ROLE_ALMACENISTA"))
-                                                                                                                                                                        ? "/Productos/dashboard"
+                                                                                                                                                                        ? "/productos/dashboard"
                                                                                                                                                                         : "/dashboard";
                                                         res.sendRedirect(target);
                                                 })
                                                 .failureUrl("/login?error=true")
                                                 .permitAll())
-                                .logout(lo -> lo.logoutUrl("/logout")
+                                .logout(lo -> lo
+                                                .logoutUrl("/logout")
                                                 .logoutSuccessUrl("/login?logout=true")
                                                 .deleteCookies("JSESSIONID")
-                                                .invalidateHttpSession(true));
+                                                .invalidateHttpSession(true))
+                                .exceptionHandling(e -> e.accessDeniedHandler(
+                                                (req, res, ex) -> res.sendRedirect("/login?denied=true")))
+                                .authenticationProvider(authenticationProvider(passwordEncoder()));
+
                 return http.build();
         }
 }
