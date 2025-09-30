@@ -58,44 +58,24 @@
     </style>
 </head>
 
-<body class="bg-gray-50">
-
-    <!-- Header -->
-    <header class="bg-black text-white shadow-lg sticky top-0 z-50">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between h-20">
-                <!-- Logo -->
-                <a th:href="@{/}" class="inline-block">
-                    <img th:src="@{/img/logo.png}" alt="DMC VISVARD"
-                        class="h-12 md:h-14 w-auto hover:scale-105 transition-transform duration-200">
-                </a>
-
-                <!-- Desktop: Search & Login -->
-                <div class="hidden lg:flex items-center gap-4">
-                    <div class="flex items-center">
-                        <input type="text" id="searchInput"
-                            class="px-4 py-2 rounded-l-full border-2 border-red-600 focus:outline-none focus:border-red-700 text-black w-64"
-                            placeholder="Buscar...">
-                        <button id="searchButton"
-                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-r-full transition-all duration-300">
-                            <i class="fa-solid fa-search"></i>
-                        </button>
-                    </div>
-                    <a  th:href="@{/login}">
-                        <button
-                            class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded-full transition-all duration-300 transform hover:scale-105">
-                            Iniciar Sesión
-                        </button>
-                    </a>
-                </div>
-
-                <!-- Mobile Menu Toggle -->
-                <div class="lg:hidden">
-                    <button id="menuToggle" class="text-white text-2xl p-2">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
+<body>
+    <header>
+        <div>
+            <img src="imagenes/LOGO.png" th:src="@{/imagenes/LOGO.png}" alt="image" class="logo">
+        </div>
+        <div class="header-content">
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Buscar..." />
+                <button id="searchButton" class="search-button">
+                    <i class="fa-solid fa-search"></i>
+                </button>
             </div>
+            <a href="login3.html" th:href="@{/login3.html}">
+                <button class="cta-button">Iniciar Sesion</button>
+            </a>
+        </div>
+        <div class="menu-toggle">
+            <i class="fas fa-bars"></i>
         </div>
     </header>
 
