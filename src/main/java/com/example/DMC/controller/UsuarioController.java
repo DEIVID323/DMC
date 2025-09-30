@@ -16,7 +16,6 @@ import com.example.DMC.service.RolService;
 
 @Controller
 @RequestMapping("/usuarios")
-
 public class UsuarioController {
 
     @Autowired
