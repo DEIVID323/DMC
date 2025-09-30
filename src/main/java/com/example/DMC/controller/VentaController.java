@@ -10,6 +10,7 @@ import com.example.DMC.enums.EstadoVenta;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +36,7 @@ public class VentaController {
 
     // Mostrar POS (Punto de Venta)
     @GetMapping
+
     public String mostrarPOS(Model model) {
         List<Cliente> clientes = clienteService.findByActivoTrue();
         model.addAttribute("clientes", clientes);
@@ -48,6 +50,7 @@ public class VentaController {
 
     // Mostrar historial de ventas
     @GetMapping("/historial")
+
     public String mostrarHistorial(Model model) {
         try {
             List<Venta> ventas = ventaService.findAllOrderByFechaDesc();
@@ -89,6 +92,7 @@ public class VentaController {
     // API: Buscar productos para el POS
     @GetMapping("/buscar")
     @ResponseBody
+ 
     public ResponseEntity<List<Producto>> buscarProductos(@RequestParam("term") String term) {
         List<Producto> productos = productoService.buscarPorNombreOCodigo(term);
         return ResponseEntity.ok(productos);
@@ -97,6 +101,7 @@ public class VentaController {
     // API: Guardar venta
     @PostMapping("/guardar")
     @ResponseBody
+
     public ResponseEntity<Map<String, Object>> guardarVenta(@RequestBody Map<String, Object> ventaData) {
         Map<String, Object> response = new HashMap<>();
 

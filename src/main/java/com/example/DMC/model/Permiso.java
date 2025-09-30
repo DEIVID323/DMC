@@ -24,6 +24,9 @@ public class Permiso {
     @Column(name = "nombre_permiso", nullable = false, unique = true, length = 100)
     private String nombrePermiso;
 
+    @Column(name = "codigo", length = 50)
+    private String codigo;
+
     @Column(name = "descripcion", length = 255)
     private String descripcion;
 }

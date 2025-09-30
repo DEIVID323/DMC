@@ -24,25 +24,25 @@ public class DetalleVentaController {
     private DetalleVentaService service;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
+   
     public List<DetalleVenta> getAll() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
+ 
     public ResponseEntity<DetalleVenta> getById(@PathVariable Integer id) {
         return service.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
+  
     public DetalleVenta create(@RequestBody DetalleVenta entity) {
         return service.save(entity);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
+
     public ResponseEntity<DetalleVenta> update(@PathVariable Integer id, @RequestBody DetalleVenta entity) {
         return service.findById(id).map(existing -> {
             entity.setIdDetalleVenta(id);

@@ -7,6 +7,7 @@ import com.example.DMC.service.MovimientoCajaService;
 import com.example.DMC.service.TurnoCajaService;
 import com.example.DMC.service.UsuarioService;
 import org.springframework.stereotype.Controller;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -59,6 +60,7 @@ public class CajaController {
     }
 
     @PostMapping("/abrir")
+    
     public String abrirCaja(@RequestParam("montoInicial") BigDecimal montoInicial,
             Authentication authentication,
             RedirectAttributes ra) {
@@ -91,6 +93,7 @@ public class CajaController {
     }
 
     @PostMapping("/cerrar")
+
     public String cerrarCaja(@RequestParam("idTurno") Integer idTurno,
             @RequestParam("montoFinalReal") BigDecimal montoFinalReal,
             RedirectAttributes ra) {

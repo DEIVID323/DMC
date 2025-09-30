@@ -24,25 +24,25 @@ public class MovimientoCajaController {
     private MovimientoCajaService service;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
+    
     public List<MovimientoCaja> getAll() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
+   
     public ResponseEntity<MovimientoCaja> getById(@PathVariable Integer id) {
         return service.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
+   
     public MovimientoCaja create(@RequestBody MovimientoCaja entity) {
         return service.save(entity);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('admin', 'CAJERO')")
+ 
     public ResponseEntity<MovimientoCaja> update(@PathVariable Integer id, @RequestBody MovimientoCaja entity) {
         return service.findById(id).map(existing -> {
             entity.setIdMovimientoCaja(id);

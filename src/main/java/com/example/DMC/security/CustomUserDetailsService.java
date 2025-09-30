@@ -1,58 +1,47 @@
 package com.example.DMC.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.DMC.model.Usuario;
+import com.example.DMC.repository.PermisoRepository;
+import com.example.DMC.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
-import com.example.DMC.model.RolPermiso;
-import com.example.DMC.model.Usuario;
-import com.example.DMC.repository.RolPermisoRepository;
-import com.example.DMC.repository.UsuarioRepository;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+        private final UsuarioRepository usuarioRepo;
+        private final PermisoRepository permisoRepo;
 
-    @Autowired
-    private RolPermisoRepository rolPermisoRepository;
+        @Override
+        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+                Usuario u = usuarioRepo.findByUsernameAndActivoTrue(username)
+                                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Usuario usuario = usuarioRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+                String role = "ROLE_" + u.getRol().getNombreRol().toUpperCase();
 
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                List<String> permisos = permisoRepo.findPermisosByUsername(username);
 
-        // Verificar que el rol no sea nulo
-        if (usuario.getRol() != null) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().getNombreRol().toUpperCase()));
+                Set<GrantedAuthority> auths = permisos.stream()
+                                .filter(p -> p != null && !p.isBlank())
+                                .map(String::toUpperCase)
+                                .map(SimpleGrantedAuthority::new)
+                                .collect(Collectors.toSet());
 
-            // Agregar permisos específicos del rol
-            List<RolPermiso> permisos = rolPermisoRepository.findByRolIdRol(usuario.getRol().getIdRol());
+                auths.add(new SimpleGrantedAuthority(role));
 
-            for (RolPermiso rolPermiso : permisos) {
-                if (rolPermiso.getPermiso() != null) {
-                    authorities.add(new SimpleGrantedAuthority(rolPermiso.getPermiso().getNombrePermiso()));
-                }
-            }
+                return new org.springframework.security.core.userdetails.User(
+                                u.getUsername(),
+                                u.getPassword(),
+                                Boolean.TRUE.equals(u.getActivo()), // habilitado
+                                true, true, true,
+                                auths);
         }
-
-        return new User(
-                usuario.getUsername(),
-                usuario.getPassword(),
-                usuario.getActivo(),
-                true, // accountNonExpired
-                true, // credentialsNonExpired
-                true, // accountNonLocked
-                authorities);
-    }
 }
