@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
+    <meta charset="utf-8" />
     <title>Punto de Venta</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -26,16 +27,21 @@
                                 <label for="buscar_producto" class="block text-sm font-semibold text-gray-700 mb-2">
                                     Buscar Producto (Nombre o Código)
                                 </label>
+
+                                <!-- IMPORTANTE: resultados dentro del contenedor .relative -->
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <i class="fas fa-search text-gray-400"></i>
                                     </div>
+
                                     <input type="text" id="buscar_producto"
                                         class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                        placeholder="Escribe para buscar productos...">
-                                </div>
-                                <div id="resultados_busqueda"
-                                    class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto">
+                                        placeholder="Escribe para buscar productos..." autocomplete="off">
+
+                                    <!-- Ahora SÍ queda posicionado respecto al .relative -->
+                                    <div id="resultados_busqueda"
+                                        class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto"
+                                        role="listbox" aria-live="polite"></div>
                                 </div>
                             </div>
 
@@ -68,9 +74,7 @@
                                                     Acción</th>
                                             </tr>
                                         </thead>
-                                        <tbody id="carrito_tbody" class="divide-y divide-gray-200">
-                                            <!-- Productos se cargan dinámicamente -->
-                                        </tbody>
+                                        <tbody id="carrito_tbody" class="divide-y divide-gray-200"></tbody>
                                     </table>
                                 </div>
 
@@ -125,7 +129,7 @@
 
                             <!-- Botón finalizar venta -->
                             <div>
-                                <button id="btn_finalizar_venta"
+                                <button id="btn_finalizar_venta" type="button"
                                     class="w-full bg-red-600 text-white px-6 py-3 rounded-lg font-semibold shadow-xl hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                                     onclick="openModal('pagoModal')" disabled>
                                     <i class="fas fa-check mr-2"></i>Finalizar Venta
@@ -134,6 +138,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
 
@@ -205,10 +210,9 @@
         <!-- JAVASCRIPT -->
         <script th:inline="javascript">
             document.addEventListener('DOMContentLoaded', function () {
-                const MONEDA = '$'; // Configurar según necesidades
+                const MONEDA = '$';
                 let carrito = [];
 
-                // Elementos del DOM
                 const buscarInput = document.getElementById('buscar_producto');
                 const resultadosBusqueda = document.getElementById('resultados_busqueda');
                 const carritoTbody = document.getElementById('carrito_tbody');
@@ -223,49 +227,52 @@
                 const pagoEfectivoDiv = document.getElementById('pago_efectivo_div');
                 const idClienteSelect = document.getElementById('id_cliente');
 
-                // Búsqueda de productos
+                // ===== API Helper Simple =====
+                async function guardarVenta(ventaData) {
+                    const response = await fetch('/ventas/guardar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(ventaData)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Error en el servidor: ' + response.status);
+                    }
+
+                    return await response.json();
+                }
+
+                // ===== Búsqueda =====
                 let timeoutId;
                 buscarInput.addEventListener('input', function () {
                     clearTimeout(timeoutId);
                     const term = this.value.trim();
-
-                    if (term.length < 2) {
-                        resultadosBusqueda.classList.add('hidden');
-                        return;
-                    }
-
+                    if (term.length < 2) { resultadosBusqueda.classList.add('hidden'); return; }
                     timeoutId = setTimeout(() => {
-                        fetch(`/ventas/buscar?term=${encodeURIComponent(term)}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                mostrarResultadosBusqueda(data);
-                            })
-                            .catch(error => {
-                                console.error('Error en búsqueda:', error);
-                            });
+                        fetch(`/ventas/buscar?term=${encodeURIComponent(term)}`, { credentials: 'same-origin' })
+                            .then(r => r.json())
+                            .then(mostrarResultadosBusqueda)
+                            .catch(err => console.error('Error en búsqueda:', err));
                     }, 300);
                 });
-
                 function mostrarResultadosBusqueda(productos) {
                     resultadosBusqueda.innerHTML = '';
-
-                    if (productos.length > 0) {
-                        productos.forEach(producto => {
+                    if (productos.length) {
+                        productos.forEach(p => {
                             const item = document.createElement('div');
                             item.className = 'px-4 py-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0';
                             item.innerHTML = `
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <div class="font-semibold text-gray-800">${producto.nombre}</div>
-                                    <div class="text-sm text-gray-600">Stock: ${producto.stock}</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="font-bold text-red-600">${MONEDA}${parseFloat(producto.precioVenta).toFixed(2)}</div>
-                                </div>
-                            </div>
-                        `;
+                <div class="flex justify-between items-center">
+                  <div>
+                    <div class="font-semibold text-gray-800">${p.nombre}</div>
+                    <div class="text-sm text-gray-600">Stock: ${p.stock}</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-bold text-red-600">${MONEDA}${parseFloat(p.precioVenta).toFixed(2)}</div>
+                  </div>
+                </div>`;
                             item.addEventListener('click', () => {
-                                agregarAlCarrito(producto);
+                                agregarAlCarrito(p);
                                 buscarInput.value = '';
                                 resultadosBusqueda.classList.add('hidden');
                             });
@@ -277,111 +284,82 @@
                         resultadosBusqueda.classList.remove('hidden');
                     }
                 }
-
-                // Ocultar resultados al hacer clic fuera
-                document.addEventListener('click', function (e) {
+                document.addEventListener('click', (e) => {
                     if (!buscarInput.contains(e.target) && !resultadosBusqueda.contains(e.target)) {
                         resultadosBusqueda.classList.add('hidden');
                     }
                 });
 
-                function agregarAlCarrito(producto) {
-                    const existente = carrito.find(item => item.id === producto.idProducto);
-                    if (existente) {
-                        existente.cantidad++;
-                    } else {
-                        carrito.push({
-                            id: producto.idProducto,
-                            nombre: producto.nombre,
-                            precio: parseFloat(producto.precioVenta),
-                            cantidad: 1
-                        });
-                    }
+                // ===== Carrito =====
+                function agregarAlCarrito(p) {
+                    const e = carrito.find(it => it.id === p.idProducto);
+                    if (e) e.cantidad++;
+                    else carrito.push({ id: p.idProducto, nombre: p.nombre, precio: parseFloat(p.precioVenta), cantidad: 1 });
                     renderizarCarrito();
                 }
-
                 function renderizarCarrito() {
                     carritoTbody.innerHTML = '';
                     let total = 0;
-
                     if (carrito.length === 0) {
                         carritoVacio.classList.remove('hidden');
                         btnFinalizarVenta.disabled = true;
                     } else {
                         carritoVacio.classList.add('hidden');
                         btnFinalizarVenta.disabled = false;
-
-                        carrito.forEach((item, index) => {
-                            const subtotal = item.precio * item.cantidad;
-                            total += subtotal;
-
+                        carrito.forEach((it, idx) => {
+                            const subtotal = it.precio * it.cantidad; total += subtotal;
                             const tr = document.createElement('tr');
                             tr.className = 'odd:bg-white even:bg-gray-50';
                             tr.innerHTML = `
-                            <td class="px-4 py-3 text-sm font-medium text-gray-900">${item.nombre}</td>
-                            <td class="px-4 py-3 text-sm text-center">${MONEDA}${item.precio.toFixed(2)}</td>
-                            <td class="px-4 py-3 text-center">
-                                <input type="number" value="${item.cantidad}" min="1" 
-                                    class="w-16 px-2 py-1 border border-gray-300 rounded text-center cantidad-input" 
-                                    data-index="${index}">
-                            </td>
-                            <td class="px-4 py-3 text-sm text-center font-semibold">${MONEDA}${subtotal.toFixed(2)}</td>
-                            <td class="px-4 py-3 text-center">
-                                <button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm eliminar-btn" 
-                                    data-index="${index}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        `;
+                <td class="px-4 py-3 text-sm font-medium text-gray-900">${it.nombre}</td>
+                <td class="px-4 py-3 text-sm text-center">${MONEDA}${it.precio.toFixed(2)}</td>
+                <td class="px-4 py-3 text-center">
+                  <input type="number" value="${it.cantidad}" min="1"
+                         class="w-16 px-2 py-1 border border-gray-300 rounded text-center cantidad-input"
+                         data-index="${idx}">
+                </td>
+                <td class="px-4 py-3 text-sm text-center font-semibold">${MONEDA}${subtotal.toFixed(2)}</td>
+                <td class="px-4 py-3 text-center">
+                  <button type="button" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm eliminar-btn" data-index="${idx}">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>`;
                             carritoTbody.appendChild(tr);
                         });
                     }
-
                     totalVentaSpan.textContent = `${MONEDA}${total.toFixed(2)}`;
                 }
-
-                // Eventos del carrito
-                carritoTbody.addEventListener('change', function (e) {
+                carritoTbody.addEventListener('change', (e) => {
                     if (e.target.classList.contains('cantidad-input')) {
-                        const index = e.target.dataset.index;
-                        const nuevaCantidad = parseInt(e.target.value);
-                        if (nuevaCantidad > 0) {
-                            carrito[index].cantidad = nuevaCantidad;
-                            renderizarCarrito();
-                        }
+                        const i = e.target.dataset.index;
+                        const n = parseInt(e.target.value);
+                        if (n > 0) { carrito[i].cantidad = n; renderizarCarrito(); }
                     }
                 });
-
-                carritoTbody.addEventListener('click', function (e) {
-                    const button = e.target.closest('.eliminar-btn');
-                    if (button) {
-                        const index = button.dataset.index;
-                        carrito.splice(index, 1);
-                        renderizarCarrito();
-                    }
+                carritoTbody.addEventListener('click', (e) => {
+                    const btn = e.target.closest('.eliminar-btn');
+                    if (btn) { carrito.splice(btn.dataset.index, 1); renderizarCarrito(); }
                 });
 
-                // Modal de pago
+                // ===== Modal de pago =====
                 btnFinalizarVenta.addEventListener('click', () => {
-                    const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+                    const total = carrito.reduce((s, it) => s + it.precio * it.cantidad, 0);
                     modalTotalPagar.textContent = `${MONEDA}${total.toFixed(2)}`;
                     montoRecibidoInput.value = '';
                     cambioClienteSpan.textContent = `${MONEDA}0.00`;
                 });
-
                 metodoPagoSelect.addEventListener('change', () => {
                     pagoEfectivoDiv.style.display = metodoPagoSelect.value === 'efectivo' ? 'block' : 'none';
                 });
-
                 montoRecibidoInput.addEventListener('input', () => {
-                    const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+                    const total = carrito.reduce((s, it) => s + it.precio * it.cantidad, 0);
                     const recibido = parseFloat(montoRecibidoInput.value) || 0;
                     const cambio = recibido - total;
                     cambioClienteSpan.textContent = `${MONEDA}${cambio.toFixed(2)}`;
                 });
 
-                // Confirmar venta
-                btnConfirmarVenta.addEventListener('click', function () {
+                // ===== Confirmar venta =====
+                btnConfirmarVenta.addEventListener('click', async function () {
                     if (carrito.length === 0) {
                         alert('El carrito está vacío');
                         return;
@@ -391,63 +369,40 @@
                     this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
 
                     const ventaData = {
-                        id_cliente: idClienteSelect.value,
+                        id_cliente: idClienteSelect.value ? parseInt(idClienteSelect.value) : null,
                         metodo_pago: metodoPagoSelect.value,
-                        carrito: carrito.map(item => ({ id: item.id, cantidad: item.cantidad }))
+                        carrito: carrito.map(it => ({ id: it.id, cantidad: it.cantidad }))
                     };
 
-                    fetch('/ventas/guardar', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(ventaData)
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Limpiar carrito y cerrar modal
-                                carrito = [];
-                                renderizarCarrito();
-                                closeModal('pagoModal');
+                    try {
+                        const data = await guardarVenta(ventaData);
 
-                                // Mostrar mensaje de éxito
-                                alert('Venta realizada con éxito. ID: ' + data.id_venta);
-
-                                // Opcional: redirigir al ticket
-                                // window.open(`/ventas/ticket/${data.id_venta}`, '_blank');
-                            } else {
-                                alert('Error: ' + (data.error || 'Ocurrió un error desconocido.'));
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Hubo un error de conexión.');
-                        })
-                        .finally(() => {
-                            this.disabled = false;
-                            this.innerHTML = '<i class="fas fa-check mr-2"></i>Confirmar Venta';
-                        });
+                        if (data.success) {
+                            carrito = [];
+                            renderizarCarrito();
+                            closeModal('pagoModal');
+                            alert('Venta realizada con éxito. ID: ' + data.id_venta);
+                        } else {
+                            alert('Error: ' + (data.error || 'Error desconocido'));
+                        }
+                    } catch (error) {
+                        alert('Error: ' + error.message);
+                    } finally {
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-check mr-2"></i>Confirmar Venta';
+                    }
                 });
 
-                // Funciones de modal
-                window.openModal = function (modalId) {
-                    const modal = document.getElementById(modalId);
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                        modal.classList.add('flex');
-                        document.body.classList.add('overflow-hidden');
-                    }
+                // ===== Modal helpers =====
+                window.openModal = function (id) {
+                    const m = document.getElementById(id);
+                    if (m) { m.classList.remove('hidden'); m.classList.add('flex'); document.body.classList.add('overflow-hidden'); }
+                }
+                window.closeModal = function (id) {
+                    const m = document.getElementById(id);
+                    if (m) { m.classList.remove('flex'); m.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); }
                 }
 
-                window.closeModal = function (modalId) {
-                    const modal = document.getElementById(modalId);
-                    if (modal) {
-                        modal.classList.remove('flex');
-                        modal.classList.add('hidden');
-                        document.body.classList.remove('overflow-hidden');
-                    }
-                }
-
-                // Inicializar
                 renderizarCarrito();
             });
         </script>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 
 <head>
@@ -75,7 +76,7 @@
     <nav class="sidebar fixed top-0 left-0 h-full w-64 bg-primary shadow-lg overflow-y-auto transform transition-transform duration-300 ease-in-out z-40"
         id="sidebar">
         <div class="p-4 border-b border-gray-200">
-            <a class="flex items-center space-x-2 text-xl font-bold text-accent" th:href="@{/}">
+            <a class="flex items-center space-x-2 text-xl font-bold text-accent" th:href="@{/login}">
                 <img src="/img/logo.png" alt="Logo" class="h-10"
                     onerror="this.onerror=null; this.src=''; this.nextElementSibling.style.display='inline';">
                 <span style="display:none;"><i class="fas fa-store"></i> GestiónPRO</span>
@@ -86,7 +87,7 @@
         <ul class="space-y-1">
             <li>
                 <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
-                    th:href="@{/dashboard}"
+                    th:href="@{/dashboard}" sec:authorize="hasAnyRole('ADMINISTRADOR',)"
                     th:classappend="${activePage == 'dashboard' or activePage == 'home'} ? 'bg-secondary text-primary' : ''">
                     <i class="fas fa-tachometer-alt fa-fw mr-2"></i>Dashboard
                 </a>
@@ -111,7 +112,7 @@
 
             <li>
                 <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
-                    th:href="@{/productos}">
+                   sec:authorize="hasRole('ADMINISTRADOR')" th:href="@{/productos}">
                     <i class="fas fa-box-open fa-fw mr-2"></i>Inventario
                 </a>
             </li>
@@ -119,7 +120,7 @@
 
             <li>
                 <a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
-                    th:href="@{/categorias}"
+                   sec:authorize="hasRole('ADMINISTRADOR')"  th:href="@{/categorias}"
                     th:classappend="${activePage == 'categorias'} ? 'bg-secondary text-primary' : ''">
                     <i class="fas fa-tags fa-fw mr-2"></i>Categorías
                 </a>
@@ -127,25 +128,31 @@
 
 
             <li><a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                 sec:authorize="hasRole('ADMINISTRADOR')"
                     th:href="@{/almacenes}"><i class="fas fa-warehouse fa-fw mr-2"></i>Almacenes</a></li>
             <li><a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
-                    th:href="@{/movimientos-inventario}"><i class="fas fa-people-carry fa-fw mr-2"></i>Transferencias</a></li>
+                   sec:authorize="hasRole('ADMINISTRADOR')"  th:href="@{/movimientos-inventario}"><i
+                        class="fas fa-people-carry fa-fw mr-2"></i>Transferencias</a></li>
             <li><a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
-                    th:href="@{/compras}"><i class="fas fa-truck fa-fw mr-2"></i>Compras</a></li>
+                     sec:authorize="hasRole('ADMINISTRADOR')"
+                th:href="@{/compras}"><i class="fas fa-truck fa-fw mr-2"></i>Compras</a></li>
             <li><a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
-                    th:href="@{/proveedores}"><i class="fas fa-truck-loading fa-fw mr-2"></i>Proveedores</a></li>
+                    sec:authorize="hasRole('ADMINISTRADOR')" th:href="@{/proveedores}"><i class="fas fa-truck-loading fa-fw mr-2"></i>Proveedores</a></li>
             <li><a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
-                    th:href="@{/clientes}"><i class="fas fa-users fa-fw mr-2"></i>Clientes</a></li>
+                   sec:authorize="hasRole('ADMINISTRADOR')"  th:href="@{/clientes}"><i class="fas fa-users fa-fw mr-2"></i>Clientes</a></li>
             <li><a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
                     th:href="@{/caja}"><i class="fas fa-calculator fa-fw mr-2"></i>Caja</a></li>
             <li><a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
-                    th:href="@{/reporte}"><i class="fas fa-chart-line fa-fw mr-2"></i>Reportes</a></li>
+                  sec:authorize="hasRole('ADMINISTRADOR')"  th:href="@{/reporte}"><i class="fas fa-chart-line fa-fw mr-2"></i>Reportes</a></li>
             <li><a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
-                    th:href="@{/usuarios}"><i class="fas fa-users-cog fa-fw mr-2"></i>Usuarios</a></li>
+                   sec:authorize="hasRole('ADMINISTRADOR')" th:href="@{/usuarios}"><i class="fas fa-users-cog fa-fw mr-2"></i>Usuarios</a></li>
             <li><a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
-                    th:href="@{/tipocambio}"><i class="fas fa-exchange-alt fa-fw mr-2"></i>Tipo de Cambio</a></li>
+                   sec:authorize="hasRole('ADMINISTRADOR')" th:href="@{/roles}"
+                   th:classappend="${activePage == 'roles'} ? 'bg-secondary text-primary' : ''"><i class="fas fa-user-shield fa-fw mr-2"></i>Roles</a></li>
             <li><a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
-                    th:href="@{/tipomoneda}"><i class="fas fa-coins fa-fw mr-2"></i>Monedas</a></li>
+                   sec:authorize="hasRole('ADMINISTRADOR')"  th:href="@{/tipocambio}"><i class="fas fa-exchange-alt fa-fw mr-2"></i>Tipo de Cambio</a></li>
+            <li><a class="block px-4 py-3 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200 animate-slide-in-left"
+                  sec:authorize="hasRole('ADMINISTRADOR')"   th:href="@{/tipomoneda}"><i class="fas fa-coins fa-fw mr-2"></i>Monedas</a></li>
         </ul>
     </nav>
 
@@ -161,17 +168,34 @@
             <div class="relative">
                 <button class="flex items-center text-accent hover:text-secondary focus:outline-none"
                     id="userDropdownToggle">
-                    <i class="fas fa-user mr-2"></i> <span id="usuarioNombre">Usuario</span>
+                    <i class="fas fa-user-circle mr-2 text-xl"></i>
+                    <span sec:authentication="name">Usuario</span>
+                    <i class="fas fa-chevron-down ml-2 text-sm"></i>
                 </button>
-                <ul class="absolute right-0 mt-2 w-48 bg-primary shadow-lg rounded-md overflow-hidden hidden"
+                <ul class="absolute right-0 mt-2 w-56 bg-primary shadow-lg rounded-md overflow-hidden hidden z-50"
                     id="userDropdownMenu">
+                    <li class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                        <p class="text-sm font-semibold text-accent" sec:authentication="name">Usuario</p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-user-shield mr-1"></i>
+                            <span th:if="${#authorization.expression('hasRole(''ADMINISTRADOR'')')}">Administrador</span>
+                            <span th:if="${#authorization.expression('hasRole(''CAJERO'')') and !#authorization.expression('hasRole(''ADMINISTRADOR'')')}">Cajero</span>
+                            <span th:if="${#authorization.expression('hasRole(''ALMACENISTA'')') and !#authorization.expression('hasRole(''ADMINISTRADOR'')')}">Almacenista</span>
+                            <span th:if="${#authorization.expression('hasRole(''CLIENTE'')') and !#authorization.expression('hasRole(''ADMINISTRADOR'')') and !#authorization.expression('hasRole(''CAJERO'')') and !#authorization.expression('hasRole(''ALMACENISTA'')')}">Cliente</span>
+                        </p>
+                    </li>
                     <li><a class="block px-4 py-2 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200"
-                            th:href="@{/perfil}">Mi Perfil</a></li>
+                            th:href="@{/perfil}"><i class="fas fa-user fa-fw mr-2"></i>Mi Perfil</a></li>
                     <li>
                         <hr class="border-gray-200">
                     </li>
-                    <li><a class="block px-4 py-2 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200"
-                            th:href="@{/auth/logout}">Cerrar Sesión</a></li>
+                    <li>
+                        <form th:action="@{/logout}" method="post" class="m-0">
+                            <button type="submit" class="w-full text-left px-4 py-2 text-accent hover:bg-secondary hover:text-primary transition-colors duration-200">
+                                <i class="fas fa-sign-out-alt fa-fw mr-2"></i>Cerrar Sesión
+                            </button>
+                        </form>
+                    </li>
                 </ul>
             </div>
         </header>

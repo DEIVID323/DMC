@@ -28,12 +28,22 @@
                 <span th:text="${error}"></span>
             </div>
 
-            <!-- Botón para abrir modal de crear -->
-            <div class="mb-6">
+            <!-- Botones de acción -->
+            <div class="mb-6 flex gap-4">
                 <button type="button" onclick="openModal('createCategoriaModal')"
                     class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold shadow-xl hover:bg-red-700 transition-colors duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-red-300">
                     <i class="fas fa-plus mr-2"></i>Nueva Categoría
                 </button>
+
+                <a th:if="${!mostrarInactivos}" th:href="@{/categorias/inactivos}"
+                    class="bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold shadow-lg hover:bg-gray-700 transition-colors duration-300 transform hover:scale-[1.01]">
+                    <i class="fas fa-eye-slash mr-2"></i>Ver Inactivos
+                </a>
+
+                <a th:if="${mostrarInactivos}" th:href="@{/categorias}"
+                    class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold shadow-lg hover:bg-green-700 transition-colors duration-300 transform hover:scale-[1.01]">
+                    <i class="fas fa-eye mr-2"></i>Ver Activos
+                </a>
             </div>
 
             <!-- Tabla con estilos Tailwind mejorados -->
@@ -72,14 +82,24 @@
                                         <button
                                             class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
                                             th:onclick="|openModal('editCategoriaModal${c.idCategoria}')|">
-                                            <i class="fas fa-edit"></i> Editar
+                                            <i class="fas fa-edit"></i>
                                         </button>
-                                        <!-- Botón ELIMINAR (Usando modal de confirmación custom) -->
-                                        <button
-                                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
-                                            th:onclick="|openConfirmModal('@{/categorias/eliminar/{id}(id=${c.idCategoria})}')|">
-                                            <i class="fas fa-trash"></i> Eliminar
-                                        </button>
+
+                                        <!-- Botón INACTIVAR (solo en vista de activos) -->
+                                        <a th:if="${!mostrarInactivos}"
+                                            th:href="@{/categorias/inactivar/{id}(id=${c.idCategoria})}"
+                                            class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
+                                            onclick="return confirm('¿Seguro que deseas inactivar esta categoría?')">
+                                            <i class="fas fa-ban"></i>
+                                        </a>
+
+                                        <!-- Botón ACTIVAR (solo en vista de inactivos) -->
+                                        <a th:if="${mostrarInactivos}"
+                                            th:href="@{/categorias/activar/{id}(id=${c.idCategoria})}"
+                                            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
+                                            onclick="return confirm('¿Seguro que deseas activar esta categoría?')">
+                                            <i class="fas fa-check-circle"></i>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>

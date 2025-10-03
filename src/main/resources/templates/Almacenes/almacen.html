@@ -29,12 +29,22 @@
                 <span th:text="${error}"></span>
             </div>
 
-            <!-- Botón para abrir modal de crear -->
-            <div class="mb-6" sec:authorize="hasRole('ADMIN')">
+            <!-- Botones de acción -->
+            <div class="mb-6 flex gap-4" sec:authorize="hasRole('ADMINISTRADOR')">
                 <button type="button" onclick="openModal('createAlmacenModal')"
                     class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold shadow-xl hover:bg-red-700 transition-colors duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-red-300">
                     <i class="fas fa-plus mr-2"></i>Nuevo Almacén
                 </button>
+
+                <a th:if="${!mostrarInactivos}" th:href="@{/almacenes/inactivos}"
+                    class="bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold shadow-lg hover:bg-gray-700 transition-colors duration-300 transform hover:scale-[1.01]">
+                    <i class="fas fa-eye-slash mr-2"></i>Ver Inactivos
+                </a>
+
+                <a th:if="${mostrarInactivos}" th:href="@{/almacenes}"
+                    class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold shadow-lg hover:bg-green-700 transition-colors duration-300 transform hover:scale-[1.01]">
+                    <i class="fas fa-eye mr-2"></i>Ver Activos
+                </a>
             </div>
 
             <!-- Tabla con estilos Tailwind mejorados -->
@@ -49,7 +59,7 @@
                                 </th>
                                 <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider">Activo
                                 </th>
-                                <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider" sec:authorize="hasRole('ADMIN')">Acciones
+                                <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider" sec:authorize="hasRole('ADMINISTRADOR')">Acciones
                                 </th>
                             </tr>
                         </thead>
@@ -71,20 +81,30 @@
                                         <i class="fas fa-times-circle mr-1"></i> No
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-sm" sec:authorize="hasRole('ADMIN')">
+                                <td class="px-4 py-3 text-sm" sec:authorize="hasRole('ADMINISTRADOR')">
                                     <div class="flex justify-center space-x-2">
                                         <!-- Botón EDITAR -->
                                         <button
                                             class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
                                             th:onclick="|openModal('editAlmacenModal${a.id}')|">
-                                            <i class="fas fa-edit"></i> Editar
+                                            <i class="fas fa-edit"></i>
                                         </button>
-                                        <!-- Botón ELIMINAR (Usando modal de confirmación custom) -->
-                                        <button
-                                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
-                                            th:onclick="|openConfirmModal('@{/almacenes/eliminar/{id}(id=${a.id})}')|">
-                                            <i class="fas fa-trash"></i> Eliminar
-                                        </button>
+
+                                        <!-- Botón INACTIVAR (solo en vista de activos) -->
+                                        <a th:if="${!mostrarInactivos}"
+                                            th:href="@{/almacenes/inactivar/{id}(id=${a.id})}"
+                                            class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
+                                            onclick="return confirm('¿Seguro que deseas inactivar este almacén?')">
+                                            <i class="fas fa-ban"></i>
+                                        </a>
+
+                                        <!-- Botón ACTIVAR (solo en vista de inactivos) -->
+                                        <a th:if="${mostrarInactivos}"
+                                            th:href="@{/almacenes/activar/{id}(id=${a.id})}"
+                                            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
+                                            onclick="return confirm('¿Seguro que deseas activar este almacén?')">
+                                            <i class="fas fa-check-circle"></i>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>

@@ -3,6 +3,7 @@ package com.example.DMC.controller;
 import com.example.DMC.model.Categoria;
 import com.example.DMC.service.CategoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -12,27 +13,44 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/categorias")
+@PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CAJERO')")
 public class CategoriaController {
+    
 
     @Autowired
     private CategoriaService service; // SIN CAMBIOS EN EL SERVICE
 
-    // Listar categorías
+    // Listar categorías activas
     @GetMapping
     public String listarCategorias(Model model) {
-        List<Categoria> categorias = service.findAll();
+        List<Categoria> categorias = service.findByActivoTrue();
         model.addAttribute("categorias", categorias);
-        model.addAttribute("newCategoria", new Categoria()); // para el modal de crear
+        model.addAttribute("newCategoria", new Categoria());
+        model.addAttribute("mostrarInactivos", false);
 
-        // Configuración para el layout (similar a ProductoController)
-        model.addAttribute("view", "categoria"); // Apunta al fragmento 'categoria.html'
+        model.addAttribute("view", "categoria");
         model.addAttribute("activePage", "categorias");
 
-        return "layout"; // Retorna el layout principal que cargará el fragmento "categoria"
+        return "layout";
+    }
+
+    // Listar categorías inactivas
+    @GetMapping("/inactivos")
+    public String listarCategoriasInactivas(Model model) {
+        List<Categoria> categorias = service.findByActivoFalse();
+        model.addAttribute("categorias", categorias);
+        model.addAttribute("newCategoria", new Categoria());
+        model.addAttribute("mostrarInactivos", true);
+
+        model.addAttribute("view", "categoria");
+        model.addAttribute("activePage", "categorias");
+
+        return "layout";
     }
 
     // Guardar categoría (crear)
     @PostMapping("/guardar")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CAJERO')")
     public String guardarCategoria(@ModelAttribute("newCategoria") Categoria categoria,
             // Spring Binder se encarga de 'activo' cuando se usa th:field,
             // pero mantenemos @RequestParam activo como fallback si no se usa th:field.
@@ -54,6 +72,7 @@ public class CategoriaController {
 
     // Actualizar categoría
     @PostMapping("/actualizar")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CAJERO')")
     public String actualizarCategoria(@RequestParam("idCategoria") Integer idCategoria,
             @RequestParam("nombre") String nombre,
             // Captura el valor del checkbox. Por el hidden input, si no se marca, llega
@@ -72,12 +91,28 @@ public class CategoriaController {
         return "redirect:/categorias";
     }
 
-    // Eliminar categoría
-    @GetMapping("/eliminar/{id}")
-    public String eliminarCategoria(@PathVariable Integer id, RedirectAttributes ra) {
-        service.deleteById(id);
-        ra.addFlashAttribute("mensaje", "Categoría eliminada.");
+    // Inactivar categoría
+    @GetMapping("/inactivar/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CAJERO')")
+    public String inactivarCategoria(@PathVariable Integer id, RedirectAttributes ra) {
+        Categoria cat = service.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada: " + id));
+        cat.setActivo(false);
+        service.save(cat);
+        ra.addFlashAttribute("mensaje", "Categoría inactivada correctamente.");
         return "redirect:/categorias";
+    }
+
+    // Activar categoría
+    @GetMapping("/activar/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CAJERO')")
+    public String activarCategoria(@PathVariable Integer id, RedirectAttributes ra) {
+        Categoria cat = service.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada: " + id));
+        cat.setActivo(true);
+        service.save(cat);
+        ra.addFlashAttribute("mensaje", "Categoría activada correctamente.");
+        return "redirect:/categorias/inactivos";
     }
 
 /* @Controller

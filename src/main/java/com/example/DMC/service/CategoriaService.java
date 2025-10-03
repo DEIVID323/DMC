@@ -18,6 +18,14 @@ public class CategoriaService {
         return repository.findAll();
     }
 
+    public List<Categoria> findByActivoTrue() {
+        return repository.findByActivoTrue();
+    }
+
+    public List<Categoria> findByActivoFalse() {
+        return repository.findByActivoFalse();
+    }
+
     public Optional<Categoria> findById(Integer id) {
         return repository.findById(id);
     }

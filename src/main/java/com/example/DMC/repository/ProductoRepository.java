@@ -7,7 +7,8 @@ import org.springframework.data.repository.query.Param;
 import com.example.DMC.model.Producto;
 
 public interface ProductoRepository extends JpaRepository<Producto, Integer> {
-        List<Producto> findByActivoTrue();
+    List<Producto> findByActivoTrue();
+    List<Producto> findByActivoFalse();
 
     long countByActivo(boolean activo);
 

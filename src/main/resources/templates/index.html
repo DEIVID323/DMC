@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
     <meta charset="UTF-8">
@@ -69,7 +70,7 @@
                     <img src="img/logo.png" th:src="@{/img/logo.png}" alt="DMC VISVARD" class="h-12 md:h-14 w-auto">
                 </div>
 
-                <!-- Desktop: Search & Login -->
+                <!-- Desktop: Search & User -->
                 <div class="hidden lg:flex items-center gap-4">
                     <div class="flex items-center">
                         <input type="text" id="searchInput"
@@ -80,12 +81,51 @@
                             <i class="fa-solid fa-search"></i>
                         </button>
                     </div>
-                    <a th:href="@{/login}">
-                        <button
-                            class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded-full transition-all duration-300 transform hover:scale-105">
-                            Iniciar Sesión
+
+                    <!-- Mostrar login si NO está autenticado -->
+                    <div sec:authorize="!isAuthenticated()">
+                        <a th:href="@{/login}">
+                            <button
+                                class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded-full transition-all duration-300 transform hover:scale-105">
+                                Iniciar Sesión
+                            </button>
+                        </a>
+                    </div>
+
+                    <!-- Mostrar usuario si está autenticado -->
+                    <div sec:authorize="isAuthenticated()" class="relative">
+                        <button class="flex items-center text-white hover:text-red-600 focus:outline-none transition-colors"
+                            id="userDropdownToggle">
+                            <i class="fas fa-user-circle mr-2 text-2xl"></i>
+                            <span sec:authentication="name" class="font-semibold">Usuario</span>
+                            <i class="fas fa-chevron-down ml-2 text-sm"></i>
                         </button>
-                    </a>
+                        <ul class="absolute right-0 mt-2 w-56 bg-white shadow-lg rounded-md overflow-hidden hidden z-50"
+                            id="userDropdownMenu">
+                            <li class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                                <p class="text-sm font-semibold text-gray-800" sec:authentication="name">Usuario</p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-user-shield mr-1"></i>
+                                    <span th:if="${#authorization.expression('hasRole(''ADMINISTRADOR'')')}">Administrador</span>
+                                    <span th:if="${#authorization.expression('hasRole(''CAJERO'')') and !#authorization.expression('hasRole(''ADMINISTRADOR'')')}">Cajero</span>
+                                    <span th:if="${#authorization.expression('hasRole(''ALMACENISTA'')') and !#authorization.expression('hasRole(''ADMINISTRADOR'')')}">Almacenista</span>
+                                    <span th:if="${#authorization.expression('hasRole(''CLIENTE'')') and !#authorization.expression('hasRole(''ADMINISTRADOR'')') and !#authorization.expression('hasRole(''CAJERO'')') and !#authorization.expression('hasRole(''ALMACENISTA'')')}">Cliente</span>
+                                </p>
+                            </li>
+                            <li><a class="block px-4 py-2 text-gray-800 hover:bg-red-600 hover:text-white transition-colors duration-200"
+                                    th:href="@{/perfil}"><i class="fas fa-user fa-fw mr-2"></i>Mi Perfil</a></li>
+                            <li>
+                                <hr class="border-gray-200">
+                            </li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="m-0">
+                                    <button type="submit" class="w-full text-left px-4 py-2 text-gray-800 hover:bg-red-600 hover:text-white transition-colors duration-200">
+                                        <i class="fas fa-sign-out-alt fa-fw mr-2"></i>Cerrar Sesión
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- Mobile Menu Toggle -->
@@ -505,6 +545,24 @@
                 mobileMenu.classList.remove('active');
             });
         });
+
+        // User Dropdown Toggle
+        const userDropdownToggle = document.getElementById('userDropdownToggle');
+        const userDropdownMenu = document.getElementById('userDropdownMenu');
+
+        if (userDropdownToggle && userDropdownMenu) {
+            userDropdownToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdownMenu.classList.toggle('hidden');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!userDropdownToggle.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+                    userDropdownMenu.classList.add('hidden');
+                }
+            });
+        }
     </script>
 </body>
 

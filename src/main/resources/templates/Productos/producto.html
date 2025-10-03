@@ -37,12 +37,22 @@
                 <span th:if="${param.err}" th:text="${param.err}">Ocurrió un error.</span>
             </div>
 
-            <!-- Botón crear - MODIFICADO para usar JS puro -->
-            <div class="mb-6">
+            <!-- Botones de acción -->
+            <div class="mb-6 flex gap-4">
                 <button type="button" onclick="openModal('createProductoModal')"
                     class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold shadow-lg hover:bg-red-700 transition-colors duration-300 transform hover:scale-[1.01]">
                     <i class="fas fa-plus mr-2"></i>Agregar Producto
                 </button>
+
+                <a th:if="${!mostrarInactivos}" th:href="@{/productos/inactivos}"
+                    class="bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold shadow-lg hover:bg-gray-700 transition-colors duration-300 transform hover:scale-[1.01]">
+                    <i class="fas fa-eye-slash mr-2"></i>Ver Inactivos
+                </a>
+
+                <a th:if="${mostrarInactivos}" th:href="@{/productos}"
+                    class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold shadow-lg hover:bg-green-700 transition-colors duration-300 transform hover:scale-[1.01]">
+                    <i class="fas fa-eye mr-2"></i>Ver Activos
+                </a>
             </div>
 
 
@@ -121,17 +131,27 @@
                                     th:text="${#temporals.format(producto.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
                                 <td class="px-4 py-3 text-sm">
                                     <div class="flex space-x-2">
-                                        <!-- Botón EDITAR - MODIFICADO para usar JS puro -->
+                                        <!-- Botón EDITAR -->
                                         <button
                                             class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
                                             th:onclick="|openModal('editProductoModal' + ${producto.idProducto})|">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <!-- Enlace ELIMINAR - Cuidado con la confirmación, se recomienda modal personalizado, pero se mantiene el 'onclick' por la estructura de la app. -->
-                                        <a th:href="@{/productos/eliminar/{id}(id=${producto.idProducto})}"
-                                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
-                                            onclick="return confirm('¿Seguro que deseas eliminar este producto?')">
-                                            <i class="fas fa-trash"></i>
+
+                                        <!-- Botón INACTIVAR (solo en vista de activos) -->
+                                        <a th:if="${!mostrarInactivos}"
+                                            th:href="@{/productos/inactivar/{id}(id=${producto.idProducto})}"
+                                            class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
+                                            onclick="return confirm('¿Seguro que deseas inactivar este producto?')">
+                                            <i class="fas fa-ban"></i>
+                                        </a>
+
+                                        <!-- Botón ACTIVAR (solo en vista de inactivos) -->
+                                        <a th:if="${mostrarInactivos}"
+                                            th:href="@{/productos/activar/{id}(id=${producto.idProducto})}"
+                                            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-sm transition-colors shadow-md"
+                                            onclick="return confirm('¿Seguro que deseas activar este producto?')">
+                                            <i class="fas fa-check-circle"></i>
                                         </a>
                                     </div>
                                 </td>
@@ -220,30 +240,34 @@
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Precio Compra ($)</label>
-                                <input type="number" step="0.01" th:field="*{precioCompra}"
+                                <input type="number" step="0.01" min="0" th:field="*{precioCompra}"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46"
                                     required>
                             </div>
 
                             <!-- Fila 4 -->
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Precio Venta ($)</label>
-                                <input type="number" step="0.01" th:field="*{precioVenta}"
+                                <input type="number" step="0.01" min="0" th:field="*{precioVenta}"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46"
                                     required>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Stock</label>
-                                <input type="number" th:field="*{stock}"
+                                <input type="number" min="0" th:field="*{stock}"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                     required>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Stock Mínimo</label>
-                                <input type="number" th:field="*{stockMinimo}"
+                                <input type="number" min="0" th:field="*{stockMinimo}"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                     required>
                             </div>
                         </div>
@@ -359,30 +383,34 @@
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Precio Compra ($)</label>
-                                <input type="number" step="0.01" name="precioCompra" th:value="${producto.precioCompra}"
+                                <input type="number" step="0.01" min="0" name="precioCompra" th:value="${producto.precioCompra}"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46"
                                     required>
                             </div>
 
                             <!-- Fila 4 -->
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Precio Venta ($)</label>
-                                <input type="number" step="0.01" name="precioVenta" th:value="${producto.precioVenta}"
+                                <input type="number" step="0.01" min="0" name="precioVenta" th:value="${producto.precioVenta}"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46"
                                     required>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Stock</label>
-                                <input type="number" name="stock" th:value="${producto.stock}"
+                                <input type="number" min="0" name="stock" th:value="${producto.stock}"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                     required>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Stock Mínimo</label>
-                                <input type="number" name="stockMinimo" th:value="${producto.stockMinimo}"
+                                <input type="number" min="0" name="stockMinimo" th:value="${producto.stockMinimo}"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                     required>
                             </div>
                         </div>

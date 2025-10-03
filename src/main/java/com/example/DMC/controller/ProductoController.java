@@ -36,12 +36,31 @@ public class ProductoController {
         this.proveedorRepository = proveedorRepository;
     }
 
-    // Listar productos
+    // Listar productos activos
     @GetMapping
     public String listarProductos(Model model) {
-        List<Producto> productos = productoRepository.findAll();
+        List<Producto> productos = productoRepository.findByActivoTrue();
         model.addAttribute("productos", productos);
         model.addAttribute("newProducto", new Producto());
+        model.addAttribute("mostrarInactivos", false);
+
+        model.addAttribute("categorias", categoriaRepository.findAll());
+        model.addAttribute("almacenes", almacenRepository.findAll());
+        model.addAttribute("proveedores", proveedorRepository.findAll());
+
+        model.addAttribute("view", "productos/producto");
+        model.addAttribute("activePage", "productos");
+
+        return "layout";
+    }
+
+    // Listar productos inactivos
+    @GetMapping("/inactivos")
+    public String listarProductosInactivos(Model model) {
+        List<Producto> productos = productoRepository.findByActivoFalse();
+        model.addAttribute("productos", productos);
+        model.addAttribute("newProducto", new Producto());
+        model.addAttribute("mostrarInactivos", true);
 
         model.addAttribute("categorias", categoriaRepository.findAll());
         model.addAttribute("almacenes", almacenRepository.findAll());
@@ -116,11 +135,25 @@ public class ProductoController {
         return "redirect:/productos";
     }
 
-    // Eliminar producto
-    @GetMapping("/eliminar/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public String eliminarProducto(@PathVariable Integer id) {
-        productoRepository.deleteById(id);
+    // Inactivar producto
+    @GetMapping("/inactivar/{id}")
+    public String inactivarProducto(@PathVariable Integer id) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado: " + id));
+        producto.setActivo(false);
+        producto.setFechaActualizacion(LocalDateTime.now());
+        productoRepository.save(producto);
         return "redirect:/productos";
+    }
+
+    // Activar producto
+    @GetMapping("/activar/{id}")
+    public String activarProducto(@PathVariable Integer id) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado: " + id));
+        producto.setActivo(true);
+        producto.setFechaActualizacion(LocalDateTime.now());
+        productoRepository.save(producto);
+        return "redirect:/productos/inactivos";
     }
 }

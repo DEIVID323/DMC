@@ -8,4 +8,5 @@ import com.example.DMC.model.Almacen;
 
 public interface AlmacenRepository extends JpaRepository<Almacen, Integer> {
     List<Almacen> findByActivoTrue();
+    List<Almacen> findByActivoFalse();
 }

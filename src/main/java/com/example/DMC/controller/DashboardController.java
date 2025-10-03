@@ -25,9 +25,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 
      @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("view", "dashboard/index"); // inyecta el fragmento arriba
-        model.addAttribute("pageTitle", "Dashboard");
-        return "layout"; // usa el layout que te dejé completo
+        model.addAttribute("view", "dashboard/index");
+        model.addAttribute("activePage", "dashboard");
+        return "layout";
     }
  
 

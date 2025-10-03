@@ -21,6 +21,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/caja")
+@PreAuthorize("hasAnyRole('ADMINISTRADOR', 'CAJERO')")
 public class CajaController {
 
     private final TurnoCajaService turnoCajaService;

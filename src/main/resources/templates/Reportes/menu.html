@@ -1,15 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Reportes</title></head>
+<body>
 <div th:fragment="content" class="container mx-auto px-4 py-6">
-    <h1 class="text-3xl font-extrabold mb-6"><i class="fas fa-chart-line mr-2"></i>Módulo de Reportes</h1>
+    <h1 class="text-3xl font-bold mb-6"><i class="fas fa-chart-line mr-2"></i>Reportes del Sistema</h1>
+
     <div class="grid md:grid-cols-2 gap-6">
-        <a th:href="@{/reportes/ventas}" class="block bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
-            <i class="fas fa-dollar-sign text-3xl text-green-600"></i>
-            <h3 class="mt-3 text-xl font-bold">Reporte de Ventas</h3>
-            <p class="text-gray-600">Ingresos y productos más vendidos</p>
+        <!-- Reporte de Ventas -->
+        <a th:href="@{/reporte/ventas}" class="block bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl shadow-lg p-8 text-white hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200">
+            <div class="flex items-center mb-4">
+                <i class="fas fa-chart-line text-5xl mr-4"></i>
+                <div>
+                    <h2 class="text-2xl font-bold">Reporte de Ventas</h2>
+                    <p class="text-blue-100">Análisis completo de ventas</p>
+                </div>
+            </div>
+            <ul class="space-y-2 text-sm text-blue-100">
+                <li><i class="fas fa-check mr-2"></i>Filtrar por fechas y método de pago</li>
+                <li><i class="fas fa-check mr-2"></i>Estadísticas de ventas</li>
+                <li><i class="fas fa-check mr-2"></i>Exportar a Excel y PDF</li>
+            </ul>
         </a>
-        <a th:href="@{/reportes/inventario}" class="block bg-white rounded-xl shadow p-6 hover:shadow-lg transition">
-            <i class="fas fa-boxes text-3xl text-yellow-500"></i>
-            <h3 class="mt-3 text-xl font-bold">Reporte de Inventario</h3>
-            <p class="text-gray-600">Stock actual y valor de inventario</p>
+
+        <!-- Reporte de Inventario -->
+        <a th:href="@{/reporte/inventario}" class="block bg-gradient-to-br from-green-500 to-green-700 rounded-xl shadow-lg p-8 text-white hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200">
+            <div class="flex items-center mb-4">
+                <i class="fas fa-boxes text-5xl mr-4"></i>
+                <div>
+                    <h2 class="text-2xl font-bold">Reporte de Inventario</h2>
+                    <p class="text-green-100">Estado del inventario</p>
+                </div>
+            </div>
+            <ul class="space-y-2 text-sm text-green-100">
+                <li><i class="fas fa-check mr-2"></i>Filtrar por categoría y estado</li>
+                <li><i class="fas fa-check mr-2"></i>Productos con bajo stock</li>
+                <li><i class="fas fa-check mr-2"></i>Valor total del inventario</li>
+                <li><i class="fas fa-check mr-2"></i>Exportar a Excel y PDF</li>
+            </ul>
         </a>
     </div>
 </div>
+</body>
+</html>
