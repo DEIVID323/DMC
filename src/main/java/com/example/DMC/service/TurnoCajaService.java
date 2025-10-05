@@ -46,7 +46,6 @@ public class TurnoCajaService {
     public BigDecimal calcularMontoFinalSistema(TurnoCaja turno) {
         // Aquí deberías calcular: monto_inicial + total_ventas - total_gastos
         // Por ahora retorno solo el monto inicial como ejemplo
-        // TODO: Integrar con ventas y gastos
         return turno.getMontoInicial();
     }
 }

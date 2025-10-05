@@ -4,7 +4,6 @@ import com.example.DMC.model.Almacen;
 import com.example.DMC.model.MovimientoInventario;
 import com.example.DMC.model.Producto;
 import com.example.DMC.model.Usuario;
-import com.example.DMC.enums.TipoMovimientoInventario;
 import com.example.DMC.service.AlmacenService;
 import com.example.DMC.service.MovimientoInventarioService;
 import com.example.DMC.service.ProductoService;

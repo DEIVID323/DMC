@@ -1,15 +1,12 @@
 package com.example.DMC.controller;
 
 import com.example.DMC.model.Producto;
-import com.example.DMC.model.Categoria;
-import com.example.DMC.model.Almacen;
-import com.example.DMC.model.Proveedor;
 import com.example.DMC.repository.ProductoRepository;
 import com.example.DMC.repository.CategoriaRepository;
 import com.example.DMC.repository.AlmacenRepository;
 import com.example.DMC.repository.ProveedorRepository;
 
-import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;

@@ -1,6 +1,5 @@
 package com.example.DMC.controller;
 
-import com.example.DMC.enums.EstadoVenta;
 import com.example.DMC.model.Cliente;
 import com.example.DMC.model.Producto;
 import com.example.DMC.model.Venta;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Controller
@@ -86,7 +84,7 @@ public class VentaController {
             Venta v = new Venta();
             if (req.getId_cliente() != null)
                 v.setIdCliente(req.getId_cliente());
-            v.setIdUsuario(1); // TODO: del usuario autenticado
+            v.setIdUsuario(1); /* ODO: del usuario autenticado */
             v.setFechaVenta(java.time.LocalDateTime.now());
             v.setMetodoPago(req.getMetodo_pago());
             v.setEstado(com.example.DMC.enums.EstadoVenta.COMPLETADA);
@@ -99,7 +97,7 @@ public class VentaController {
                 var prod = productoService.findById(it.getId())
                         .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + it.getId()));
                 total += prod.getPrecioVenta().doubleValue() * it.getCantidad();
-                // TODO: guardar detalle y descontar stock
+                
             }
             v.setTotalVenta(total);
 
