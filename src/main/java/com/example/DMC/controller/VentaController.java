@@ -105,7 +105,6 @@ public class VentaController {
             out.put("success", true);
             out.put("id_venta", saved.getIdVenta());
             return ResponseEntity.ok(out);
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("success", false, "error", e.getMessage()));
