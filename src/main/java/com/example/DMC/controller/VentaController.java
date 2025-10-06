@@ -110,7 +110,6 @@ public class VentaController {
             return ResponseEntity.status(500).body(Map.of("success", false, "error", e.getMessage()));
         }
     }
-
     // Ticket (vista independiente)
     @GetMapping("/ticket/{id}")
     public String mostrarTicket(@PathVariable Integer id, Model model) {
